@@ -1,4 +1,4 @@
-## Action items and progress reports for RoS and NRT comms research in AY23/24
+## Action items and progress reports for RoS and NRT comms research F23
 
 ## Week 1
 
