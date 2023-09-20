@@ -13,7 +13,7 @@
 2. Accomplished with this repo.
 3. All set for Chris to attend meeting.
 
-### Rachel
+### Rachael
 
 1. Coordinate first equipment purchase
 2. Identify Temp/RH sensor
@@ -26,5 +26,21 @@
 
 ### Quimby
 
+1. Identify Lora shield for Mayfly
+2. Identify Lora gateway
+   
+*Progress:*
+1. Done, shared with Rachael for purchase.
+2. Done, shared with Rachael for purchase.
 
+### Spencer and Lars
 
+1. Identify microphone 
+2. Begin exploration of audio data format
+3. Begin review of papers on ML for rain detection, and it's relation to our available audio data format. 
+   
+*Progress:*
+
+1. Done, shared with Rachael for purchase.
+2. ??
+3. ??
