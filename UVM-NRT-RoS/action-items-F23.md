@@ -55,6 +55,7 @@
 ### Rachael
 
 1. Continue investigation of Temp/RH sampling regime- how to program?
+2. ??
 
 ### Quimby
 
@@ -64,5 +65,6 @@
 ### Spencer and Lars
 
 1. Continue exploration of audio data format
-3. Continue review of papers on ML for rain detection, and it's relation to our available audio data format. 
+3. Continue review of papers on ML for rain detection, and it's relation to our available audio data format.
+4. ??
    
