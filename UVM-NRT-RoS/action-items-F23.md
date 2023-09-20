@@ -44,3 +44,25 @@
 1. Done, shared with Rachael for purchase.
 2. ??
 3. ??
+
+## Week 2
+
+### Chris
+
+1. Communicate with students as needed on topics.
+2. ??
+
+### Rachael
+
+1. Continue investigation of Temp/RH sampling regime- how to program?
+
+### Quimby
+
+1. Verify comms between Lora gateway and shield(s), including multihop if possible (with Arduino MKR WAN 1310?)
+2. ??
+
+### Spencer and Lars
+
+1. Continue exploration of audio data format
+3. Continue review of papers on ML for rain detection, and it's relation to our available audio data format. 
+   
