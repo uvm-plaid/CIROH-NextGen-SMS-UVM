@@ -21,3 +21,12 @@
  	1. A fusion of the 4 aforementioned ML algorithms using fuzzy logic achieves a higher accuracy than using any of the four algorithms alone.
     2. Look into the use of Neural Networks and Long Short-Term Memory (LTSM) for prediction
 
+* https://www.mdpi.com/2072-4292/14/22/5750
+
+  Audio Features:
+
+  <img width="950" alt="image" src="https://github.com/uvm-plaid/CIROH-NextGen-SMS/assets/105813301/318e5cb3-b70d-4de7-9adb-68bc7e9fcd5d">
+
+
+  Takeways:
+  1. These researchers invented a new DL method for using audio data to predict rainfall
