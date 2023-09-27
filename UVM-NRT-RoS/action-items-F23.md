@@ -22,7 +22,7 @@
 *Progress:*
 1. Equipment purchase complete
 2. Sensor identified
-3. ??
+3. Investigation of Temp/RH sampling regime began on Wokwi emulator. Documentation found on measuring temperature using the Mayfly device.
 
 ### Quimby
 
@@ -42,8 +42,8 @@
 *Progress:*
 
 1. Done, shared with Rachael for purchase.
-2. ??
-3. ??
+2. Exploration of audio data format has been started.
+3. Both Spencer have Lars have began reviewing the papers on ML for rain detection.
 
 ## Week 2
 
@@ -54,17 +54,18 @@
 
 ### Rachael
 
-1. Continue investigation of Temp/RH sampling regime- how to program?
-2. ??
+1. **(1st task): Set up GitHub branches for each institution. The current branch will become main.
+2.  Learn Bibtec and store research papers on UVM's git in Bibtec file
+3. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock)
 
 ### Quimby
 
 1. Verify comms between Lora gateway and shield(s), including multihop if possible (with Arduino MKR WAN 1310?)
-2. ??
+2. Assists others as needed, read through further LoRa documentation (most tasks deferred until the devices come in).
 
 ### Spencer and Lars
 
 1. Continue exploration of audio data format
-3. Continue review of papers on ML for rain detection, and it's relation to our available audio data format.
-4. ??
+2. Continue review of papers on ML for rain detection, and it's relation to our available audio data format.
+3. Look into research done on how to get valuable data from the simple microhphones.
    
