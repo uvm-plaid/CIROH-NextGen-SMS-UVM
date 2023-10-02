@@ -1,0 +1,29 @@
+## Related work
+
+# Audio data for RoS detection
+
+ https://core.ac.uk/download/pdf/33499363.pdf
+
+ https://www.matec-conferences.org/articles/matecconf/pdf/2018/60/matecconf_ici2017_03003.pdf 
+
+ https://www.mdpi.com/2078-2489/11/4/183 
+
+ https://www.researchgate.net/publication/337793617_A_Convolutional_Neural_Networks_Approach_to_Audio_Classification_for_Rainfall_Estimation
+
+ OR
+
+ https://ieeexplore.ieee.org/document/8924399
+
+# General RoS context (from Keith Jennings)
+
+Disdrometers for rain-snow partitioning: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016JD025387, https://journals.ametsoc.org/view/journals/apme/45/10/jam2406.1.xml
+
+Citizen science obs. of precipitation phase: https://doi.org/10.3389/feart.2021.617594, https://doi.org/10.1029/2022EA002714
+
+Wireless sensor network study in American River basin: https://ieeexplore.ieee.org/abstract/document/8977506, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016WR019619, https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016WR018825
+
+Hemispheric scale rain-snow partitioning: https://www.nature.com/articles/s41467-018-03629-7
+
+23 unsolved problems in hydrology: https://www.tandfonline.com/doi/full/10.1080/02626667.2019.1620507
+
+Local Climatological Data network, which includes hourly (and sometimes sub-hourly) observations of precipitation phase: https://www.ncei.noaa.gov/maps/lcd/
