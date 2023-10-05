@@ -2,6 +2,8 @@
 
 # Audio data for RoS detection
 
+tutorial: https://towardsdatascience.com/extract-features-of-music-75a3f9bc265d
+
  https://core.ac.uk/download/pdf/33499363.pdf
 
  https://www.matec-conferences.org/articles/matecconf/pdf/2018/60/matecconf_ici2017_03003.pdf 
