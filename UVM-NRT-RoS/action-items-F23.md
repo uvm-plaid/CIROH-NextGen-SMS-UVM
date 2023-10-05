@@ -106,4 +106,43 @@
 
 1. Identify mic parts.
 2. Explore running ML models (esp. tensorflow lite) on arduino.
+
+## Week 4
+
+### Chris
+
+*Progress:*
+
+1. Yes; experts not needed. Use MFCCs, libra. 
+2. Set up repos for other schools: done.
+
+### Rachael
+
+1. Learn Bibtex and store research papers on UVM's git in Bibtex file
+2. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock) (May not have enough time this week).
+
+*Progress:*
+
+1. Order new mic parts, update inventory: done
+2. Learn Bibtex and store research papers on UVM's git in Bibtex file
+3. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock) (May not have enough time this week). : made some initial progress with programming.
+
+### Quimby
+
+1. Verify comms between Lora gateway and shield(s)
+
+*Progress*
+
+1. Verify comms between Lora gateway and shield(s): some progress. 
+
+### Spencer and Lars
+
+1. Test a model on arduino with microflow
+2. Build and test microphone
+3. Identify and begin working with MFCC extraction in librosa
+
+Progress: 
+
+1. Identify mic parts: done.
+2. Explore running ML models (esp. tensorflow lite) on arduino: some progress- identified microflow as a version of tensorflow lite that will run on arduino. 
    
