@@ -146,3 +146,45 @@ Progress:
 1. Identify mic parts: done.
 2. Explore running ML models (esp. tensorflow lite) on arduino: some progress- identified microflow as a version of tensorflow lite that will run on arduino. 
    
+## Week 5
+
+### Chris
+
+*Progress:*
+
+1. Yes; experts not needed. Use MFCCs, libra. 
+2. Set up repos for other schools: done.
+
+### Rachae
+
+1. Figure out if we can connect arduinos.
+2. Figure out if nano has ADC, and if RHT sensor requires ADC.
+3. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock) (May not have enough time this week).
+   
+*Progress*
+
+1. Learn Bibtex and store research papers on UVM's git in Bibtex file: done!
+2. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock) (May not have enough time this week). : no progres.
+
+### Quimby
+
+1. Talk to Penni for remuneration on cords, buy a nano.
+2. Start investigating mesh networking.
+3. Investigate advantages of LoraWAN- do we need gateway?
+
+*Progress* 
+
+1. Verify comms between Lora gateway and shield(s) : verified
+
+### Spencer and Lars
+
+1. Communicate with Quimby about which nano.
+2. Investigate any expected limitations of models on nano.
+3. Build and test microphone.
+
+*Progress*
+
+1. Test a model on arduino with microflow: microflow too weak. TensorFlow Lite only works on nano.
+2. Build and test microphone: no progress.
+3. Identify and begin working with MFCC extraction in librosa: straightforward! both for MFCC and HF calculation.
+   
