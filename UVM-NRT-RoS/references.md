@@ -30,6 +30,10 @@ Hemispheric scale rain-snow partitioning: https://www.nature.com/articles/s41467
 
 Local Climatological Data network, which includes hourly (and sometimes sub-hourly) observations of precipitation phase: https://www.ncei.noaa.gov/maps/lcd/
 
+# Precipitation modeling and sensors
+
+Precipation simulator (great reference for dew point/temp effects): https://scijinks.gov/precipitation-type/
+
 # LoRa 
 
 Mesh Networking: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9930341
