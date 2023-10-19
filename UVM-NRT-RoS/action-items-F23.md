@@ -188,3 +188,56 @@ Progress:
 2. Build and test microphone: no progress.
 3. Identify and begin working with MFCC extraction in librosa: straightforward! both for MFCC and HF calculation.
    
+## Week 6
+
+### Chris
+
+*Progress:*
+
+1. Yes; experts not needed. Use MFCCs, libra. 
+2. Set up repos for other schools: done.
+
+### Rachael
+
+1. Figure out how to sample temperature on arduino.
+2. Figure out how to sample RH.
+3. Define dewpoint computation for calculation from temp and RH.
+4. Figure out how to control the control loop timing. 
+
+*Progress* 
+
+1. Figure out if we can connect arduinos: yes we can.
+2. Figure out if nano has ADC, and if RHT sensor requires ADC: still figuring this.
+3. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock): Figured out how to connect arduino to laptop.
+   
+*Progress*
+
+1. Learn Bibtex and store research papers on UVM's git in Bibtex file: done!
+2. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock) (May not have enough time this week). : no progres.
+
+### Quimby
+
+1. Talk to Penni for remuneration on cords, buy a nano.
+2. Begin to figure out low level detail of data comms and Lora protocol, whether it makes sense to use loramesh for collision avoidance, reliability. 
+
+*Progress*
+
+1. Talk to Penni for remuneration on cords, buy a nano: waiting for Penni.
+2. Start investigating mesh networking.
+3. Investigate advantages of LoraWAN- do we need gateway?
+
+*Progress* 
+
+1. Verify comms between Lora gateway and shield(s) : verified
+
+### Spencer and Lars
+
+1. Record sound from mic as .wav on arduino.
+2. Investigate any expected limitations of models on nano: size and what activation functions.
+3. Start to consider workflow, .wav to MFCC and HF extraction to tensorflow
+
+*Progress*
+
+1. Communicate with Quimby about which nano; figured out. 
+2. Investigate any expected limitations of models on nano: started study
+3. Build and test microphone: built, sound coming to computer. 
