@@ -209,11 +209,6 @@ Progress:
 1. Figure out if we can connect arduinos: yes we can.
 2. Figure out if nano has ADC, and if RHT sensor requires ADC: still figuring this.
 3. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock): Figured out how to connect arduino to laptop.
-   
-*Progress*
-
-1. Learn Bibtex and store research papers on UVM's git in Bibtex file: done!
-2. Continue investigation of Temp/RH sampling regime- how to program? (Code in Wokwi emulator; read article about programming Mayfly temperature readings and clock) (May not have enough time this week). : no progres.
 
 ### Quimby
 
