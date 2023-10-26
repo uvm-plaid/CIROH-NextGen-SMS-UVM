@@ -235,4 +235,44 @@ Progress:
 
 1. Communicate with Quimby about which nano; figured out. 
 2. Investigate any expected limitations of models on nano: started study
-3. Build and test microphone: built, sound coming to computer. 
+3. Build and test microphone: built, sound coming to computer.
+
+## Week 7
+
+### Chris
+
+### Rachael
+
+1. Confirm I2C with quiic, make progress on RHT sensor reading, dewpoint calculation.
+
+*Progress*
+
+1. Figure out how to sample temperature on arduino: ordering quiic 
+2. Figure out how to sample RH: ordering quiic
+3. Define dewpoint computation for calculation from temp and RH: no progress
+4. Figure out how to control the control loop timing: can read RTC. 
+
+### Quimby
+
+1. Determine whether we can get loramesh running on our existing lora boards. If not, investigate workable options.
+
+*Progress*
+
+1. Talk to Penni for remuneration on cords, buy a nano: Done.
+2. Begin to figure out low level detail of data comms and Lora protocol, whether it makes sense to use loramesh for collision avoidance, reliability: basically no features in LoRA.
+
+*Progress* 
+
+1. Verify comms between Lora gateway and shield(s) : verified
+
+### Spencer and Lars
+
+1. Record sound from mic as .wav on arduino
+2. Test CNN model on Nano.
+
+*Progress*
+
+1. Record sound from mic as .wav on arduino: some progress, microphone built. 
+2. Investigate any expected limitations of models on nano: size and what activation functions. Tested a CNN with 50 layers, worked well in tensorflowlite. 
+3. Start to consider workflow, .wav to MFCC and HF extraction to tensorflow
+
