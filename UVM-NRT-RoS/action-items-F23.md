@@ -276,3 +276,27 @@ Progress:
 2. Investigate any expected limitations of models on nano: size and what activation functions. Tested a CNN with 50 layers, worked well in tensorflowlite. 
 3. Start to consider workflow, .wav to MFCC and HF extraction to tensorflow
 
+## Week 8
+
+### Chris
+
+### Rachael
+
+*Progress*
+
+1. Confirm I2C with quiic, make progress on RHT sensor reading, dewpoint calculation.
+
+### Quimby
+
+1. Determine whether we can get loramesh running on our existing lora boards. If not, investigate workable options. 
+
+### Spencer and Lars
+
+1. Consider .wav recording on laptop, ignore SD card writing.
+2. Continue to resolve nano IDE issue. Maybe the cord we've been using is just power?
+
+*Progress*
+
+1. Record sound from mic as .wav on arduino: progress? Some roadblocks 
+2. Test CNN model on Nano: problems with getting an IDE that works with a Nano!
+
