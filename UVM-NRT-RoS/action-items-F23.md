@@ -299,4 +299,37 @@ Progress:
 
 1. Record sound from mic as .wav on arduino: progress? Some roadblocks 
 2. Test CNN model on Nano: problems with getting an IDE that works with a Nano!
+   
+## Week 9
+
+### Chris
+
+1. Investigate soldering stations
+   
+### Rachael
+
+1. Make purchases for quimby and lars.
+2. Writing to SD card.
+
+*Progress*
+
+1. Confirm I2C with quiic, make progress on RHT sensor reading, dewpoint calculation: Done!
+
+### Quimby
+
+1. Investigate real workable lora options. Featherwing? Radiowing? https://www.adafruit.com/product/3070
+   
+*Progress*
+
+1. Determine whether we can get loramesh running on our existing lora boards. If not, investigate workable options. 
+
+### Spencer and Lars
+
+1. Buy new nanos and cables: https://store-usa.arduino.cc/products/nano-33-ble-sense-rev2
+2. Work on .wav, and SD card writing with Lars
+
+*Progress*
+
+1. Consider .wav recording on laptop, ignore SD card writing.: No progress
+2. Continue to resolve nano IDE issue. Maybe the cord we've been using is just power? : Yes it is. 
 
