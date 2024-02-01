@@ -35,8 +35,10 @@ TMRpcm audio;   // create an object for use in this sketch
 
 void setup() {
   
-  // audio.speakerPin = 11; //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
-  // pinMode(12,OUTPUT);  //Pin pairs: 9,10 Mega: 5-2,6-7,11-12,46-45
+  // Enable 15 V output
+  pinMode(22, OUTPUT);      // pin D22 is the enable line for the Mayfly's switched 3.3/5v power lines
+  digitalWrite(22, HIGH);   // set this pin high and leave it on for the rest of the sketch
+  delay(200);
   
   Serial.begin(57600);
   
@@ -55,17 +57,39 @@ void loop() {
   
     if(Serial.available()){                          //Send commands over serial to play
       switch(Serial.read()){
-        case 'r': audio.startRecording("TestingSamples/snappingTest.wav",16000,A0);Serial.println("read");break;    //Record at 16khz sample rate on pin A0
+        case 'r':
+          for (int i = 0; i < 1; ++i) {
+            // update name for the file here
+            String filename = "TestingSamples/metalking" + String(i) + ".wav";
+            
+            // Convert String to const char*
+            const char* file = filename.c_str();
+
+            // Here we pass in filename, sample rate, and pin with microphone output to start recording
+            // Common options for sample rate are:
+            //    16000 == 16 kHz
+            //    44100 == 44.1 kHz
+            audio.startRecording(file, 16000, A0);
+            Serial.println("Recording " + String(i) + " started");
+
+            // Sample length in ms
+            delay(6000); 
+
+            // Stop recording
+            audio.stopRecording(file);
+            Serial.println("Recording " + String(i) + " stopped")
+          }
+          Serial.println("done");
+          break;    
         case 'R': audio.startRecording("test.wav",16000,A0,1); break;  //Record, but with passthrough to speaker.
         case 't': audio.startRecording("test.wav",16000,A0,2); break;  //Do not record. Output direct to speaker
         							       //Note: If samples are dropped before writing, it
         							       //      will not be heard in passthrough mode
-        case 's': audio.stopRecording("TestingSamples/snappingTest.wav"); Serial.println("stop"); break;              //Stop recording
+        case 's': audio.stopRecording("file"); Serial.println("stop"); break;              //Stop recording
         case 'p': audio.play("test.wav"); break;                       //Play the recording 
         case '=': audio.volume(1); break;                              //Increase volume by 1. Does not affect recording
         case '-': audio.volume(0); break;                              //Decrease volume by 1. Does not affect recording
         case 'S': audio.stopPlayback(); break;                         //Stop all playback
-        
       }
     }
 }
