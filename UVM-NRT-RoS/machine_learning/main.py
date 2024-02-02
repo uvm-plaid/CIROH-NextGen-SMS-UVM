@@ -7,7 +7,6 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-print("test")
 
 '''
 Parameters: number, the digit being spoken
@@ -20,19 +19,16 @@ def wav2MfccList(rain_type):
         filepath = "./rain/UVM-NRT-RoS_microphone-sampling_TestingSamples_" + rain_type + str(i) + ".wav"
         # Load the audio file
         y, sr = librosa.load(filepath)
-        print(y.shape)
+        y = y[:41454]
+        #print(y.shape)
 
         # Extract MFCC features
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
 
         print(mfccs.shape)
 
-        # Pad or trim the MFCCs to a fixed length (e.g., 400)
-        padded_mfccs = librosa.util.pad_center(mfccs, size=86, axis=1)
-        print(padded_mfccs.shape)
-
         # Append MFCC's to list
-        mfcc_list.append(padded_mfccs)
+        mfcc_list.append(mfccs)
 
     # Convert the list of 2D arrays to a 3D NumPy array
     mfcc_array = np.array(mfcc_list)
@@ -59,7 +55,7 @@ for i in range(3):
 mfcc = mfcc.reshape(mfcc.shape[0], -1)
 
 # Split the data
-X_train, X_test, y_train, y_test = train_test_split(mfcc, y, test_size=0.6, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(mfcc, y, test_size=0.3, random_state=42)
 
 # Create a Random Forest classifier
 rf_classifier = RandomForestClassifier(n_estimators=5, random_state=42)
