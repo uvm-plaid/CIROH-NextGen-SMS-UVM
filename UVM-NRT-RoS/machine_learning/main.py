@@ -54,6 +54,8 @@ for i in range(3):
 # Reshape the 3d array to 2d; sklearn can't process a 3d array
 mfcc = mfcc.reshape(mfcc.shape[0], -1)
 
+print(mfcc.shape)
+
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(mfcc, y, test_size=0.3, random_state=42)
 
