@@ -7,8 +7,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-
-FILE_PATH_CONSTANT = "_01_"
+print("test")
 
 '''
 Parameters: number, the digit being spoken
@@ -21,12 +20,16 @@ def wav2MfccList(rain_type):
         filepath = "./rain/UVM-NRT-RoS_microphone-sampling_TestingSamples_" + rain_type + str(i) + ".wav"
         # Load the audio file
         y, sr = librosa.load(filepath)
+        print(y.shape)
 
         # Extract MFCC features
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=1)
+        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+
+        print(mfccs.shape)
 
         # Pad or trim the MFCCs to a fixed length (e.g., 400)
         padded_mfccs = librosa.util.pad_center(mfccs, size=86, axis=1)
+        print(padded_mfccs.shape)
 
         # Append MFCC's to list
         mfcc_list.append(padded_mfccs)
