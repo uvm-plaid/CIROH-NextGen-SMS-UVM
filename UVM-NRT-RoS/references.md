@@ -37,3 +37,13 @@ Precipation simulator (great reference for dew point/temp effects): https://scij
 # LoRa 
 
 Mesh Networking: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9930341
+
+# WiFi 
+
+The Mayfly is configured for a Bee, aka ESP8266, wifi module. We can probably use this library on the Mayfly for wifi, the client.connect function will allow communication over port 23 on the swarm. 
+
+  https://www.arduino.cc/reference/en/libraries/wifiesp/
+
+It is based on this libary but a note on the documentation says this one is retired:
+
+  https://www.arduino.cc/reference/en/libraries/wifi/
