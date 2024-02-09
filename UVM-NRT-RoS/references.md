@@ -44,6 +44,10 @@ The Mayfly is configured for a Bee, aka ESP8266, wifi module. We can probably us
 
   https://www.arduino.cc/reference/en/libraries/wifiesp/
 
+A simple web client example provides a reasonable template for how we can connect to Swarm:
+
+  https://github.com/bportaluri/WiFiEsp/blob/master/examples/WebClient/WebClient.ino
+ 
 It is based on this libary but a note on the documentation says this one is retired:
 
   https://www.arduino.cc/reference/en/libraries/wifi/
