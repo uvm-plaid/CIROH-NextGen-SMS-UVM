@@ -47,3 +47,12 @@ The Mayfly is configured for a Bee, aka ESP8266, wifi module. We can probably us
 It is based on this libary but a note on the documentation says this one is retired:
 
   https://www.arduino.cc/reference/en/libraries/wifi/
+
+# Swarm
+
+We have the evaluator kit with an integrated Swarm M138 module.
+
+Device documentation: https://swarm.space/documentation-swarm/
+
+ReST API documentation: https://swarm.space/wp-content/uploads/2022/01/Swarm-Hive-API-Integration-Guide.pdf
+
