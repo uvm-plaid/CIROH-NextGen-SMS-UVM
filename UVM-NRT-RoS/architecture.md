@@ -13,7 +13,7 @@ LoRa module:
 MayFly module:
 - Sensors and associated libraries
   + Sensirion RH, Temp, and dewpoint at minimum
-- Duplex serial communication with Mayfly
+- Duplex serial communication with Lora module
   + Wire library
   + Wired I2C serial connection
 - Flash memory read/write and associated library
