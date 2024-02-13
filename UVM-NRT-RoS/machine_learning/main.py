@@ -24,7 +24,7 @@ def wav2MfccList(folder_path):
         y = y[:129302]
 
         # Extract MFCC features
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
+        mfccs = librosa.feature.mfcc(y=y, sr=sr)
 
         #print(mfccs.shape)
 
@@ -59,12 +59,21 @@ y = np.concatenate([light_labels,med_labels,heavy_labels], axis=0)
 # Reshape the 3d array to 2d; sklearn can't process a 3d array
 X = X.reshape(X.shape[0], -1)
 
+X_new = []
+
+# Only select most features with importance > 0
+for element in X:
+    index = np.array([element[8],element[206],element[520],element[1200],element[1598],element[1662]])
+    X_new.append(index)
+
+X_new = np.array(X_new)
+print(X_new.shape)
 
 # Split the data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.3, random_state=42)
 
 # Create a Random Forest classifier
-rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_classifier = RandomForestClassifier(n_estimators=5, random_state=42)
 
 # Fit the model to the training data
 rf_classifier.fit(X_train, y_train)
@@ -75,3 +84,28 @@ predictions = rf_classifier.predict(X_test)
 # Evaluate the accuracy
 accuracy = accuracy_score(y_test, predictions)
 print(f"Model Accuracy: {accuracy*100:.2f}%")
+
+feature_names = [f"feature {i}" for i in range(X_new.shape[1])]
+
+from sklearn.inspection import permutation_importance
+import pandas as pd
+
+result = permutation_importance(
+    rf_classifier, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2
+)
+
+forest_importances = pd.Series(result.importances_mean, index=feature_names)
+for i, sample in enumerate(forest_importances):
+    if sample != 0:
+        print(i)
+
+
+print(len(forest_importances))
+
+from matplotlib import pyplot as plt
+fig, ax = plt.subplots()
+forest_importances.plot.bar(yerr=result.importances_std, ax=ax)
+ax.set_title("Feature importances using permutation on full model")
+ax.set_ylabel("Mean accuracy decrease")
+fig.tight_layout()
+plt.show()
