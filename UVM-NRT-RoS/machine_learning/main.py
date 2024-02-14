@@ -26,8 +26,6 @@ def wav2MfccList(folder_path):
         # Extract MFCC features
         mfccs = librosa.feature.mfcc(y=y, sr=sr)
 
-        #print(mfccs.shape)
-
         # Append MFCC's to list
         mfcc_list.append(mfccs)
 
