@@ -1,0 +1,4 @@
+Hyperparameter Optimization using Random Forest
+
+
+Most accurate configuration is 15 mfcc's, 14 RF trees, which yielded 100.00% accuracy.
