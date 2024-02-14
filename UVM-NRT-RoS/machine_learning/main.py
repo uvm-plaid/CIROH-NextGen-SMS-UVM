@@ -12,10 +12,10 @@ from matplotlib import pyplot as plt
 
 most_accurate = 0
 most_accurate_params = []
-with open("optimization.txt","w") as f:
-    f.write("Hyperparameter Optimization using Random Forest\n\n")
-with open("optimization.csv", "w") as f:
-    f.write("Hyperparameter Optimization using random forest\n")
+#with open("optimization.txt","w") as f:
+ #   f.write("Hyperparameter Optimization using Random Forest\n\n")
+#with open("optimization.csv", "w") as f:
+  #  f.write("Hyperparameter Optimization using random forest\n")
 
 progress = 0
 for num_trees in range(1,15):
@@ -93,12 +93,12 @@ for num_trees in range(1,15):
             most_accurate_params.append(num_trees)
             most_accurate_params.append(most_accurate)
         print(f"{progress}/{20*15}")
-        with open("optimization.csv","a") as f:
-            f.write(f"{m},{num_trees},{accuracy}\n")
+       # with open("optimization.csv","a") as f:
+          #  f.write(f"{m},{num_trees},{accuracy}\n")
 
 print("done")
-with open("optimization.txt","a") as f:
-    f.write(f"\nMost accurate configuration is {most_accurate_params[0]} mfcc's, {most_accurate_params[1]} RF trees, which yielded {most_accurate_params[2]*100:.2f}% accuracy.")
+#with open("optimization.txt","a") as f:
+   # f.write(f"\nMost accurate configuration is {most_accurate_params[0]} mfcc's, {most_accurate_params[1]} RF trees, which yielded {most_accurate_params[2]*100:.2f}% accuracy.")
 
 feature_names = [f"feature {i}" for i in range(X.shape[1])]
 
