@@ -25,7 +25,6 @@ x_tree = [x for x in range(1,15)]
 mfcc_fit = np.polyfit(np.log(x_mfcc), accuracies_by_n_mfccs, 1)
 print(mfcc_fit)
 
-
 fig, axs = plt.subplots(2, 1, layout='constrained')
 axs[0].plot(accuracies_by_n_mfccs)
 axs[1].plot(accuracies_by_trees)
@@ -33,5 +32,7 @@ axs[1].plot(accuracies_by_trees)
 axs[0].set_title("Average Accuracy by Number of MFCC's")
 axs[1].set_title("Average Accuracy by Number of RF Trees")
 
+plt.suptitle("Random Forest Model Evaluation")
+plt.savefig("rf.png")
 
 plt.show()
