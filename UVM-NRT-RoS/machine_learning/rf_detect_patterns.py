@@ -32,4 +32,6 @@ axs[1].plot(accuracies_by_trees)
 
 axs[0].set_title("Average Accuracy by Number of MFCC's")
 axs[1].set_title("Average Accuracy by Number of RF Trees")
+
+
 plt.show()

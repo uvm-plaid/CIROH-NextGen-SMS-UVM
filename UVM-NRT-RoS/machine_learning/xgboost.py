@@ -69,7 +69,14 @@ with open("xgb.csv", "w") as f:
     f.write("num_estimators,learn_rate,accuracy\n")
 
 for num_est in range(1,30):
-    for l_rate in np.arange(0.1,0.5,0.1):
+    for l_rate in np.arange(0.1,0.6,0.1):
         gbc = GradientBoostingClassifier(n_estimators=num_est,learning_rate=l_rate)
         gbc.fit(X_train, y_train)
-        print(gbc.score(X_test, y_test))
+
+        # Make predictions on the test data
+        predictions = gbc.predict(X_test)
+
+        # Evaluate the accuracy
+        accuracy = accuracy_score(y_test, predictions)
+        with open("xgb.csv","a") as f:
+            f.write(f"{num_est},{l_rate},{accuracy}\n")
