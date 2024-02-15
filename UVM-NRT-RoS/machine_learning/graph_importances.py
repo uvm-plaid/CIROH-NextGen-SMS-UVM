@@ -6,7 +6,7 @@ for i in range(1,267):
     x.append(i)
 y = []
 
-with open("optimization.csv", "r") as f:
+with open("rf.csv", "r") as f:
     junk_line = f.readline()
     for line in f:
         line = line.split(",")

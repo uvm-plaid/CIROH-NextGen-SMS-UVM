@@ -2,7 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 
-df = pd.read_csv("optimization.csv")
+df = pd.read_csv("rf.csv")
 print(df.head())
 
 accuracies_by_trees = []
