@@ -1,21 +1,11 @@
-"""
-Machine Learning on .wav dataset using MFCC extraction and Random Forest
-Spencer R. Karofsky
-"""
-import librosa
-import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import os
-from matplotlib import pyplot as plt
+import librosa
+import numpy as np
+from micromlgen import port
 
-most_accurate = 0
-most_accurate_params = []
-#with open("rf.txt","w") as f:
- #   f.write("Hyperparameter Optimization using Random Forest\n\n")
-#with open("rf.csv", "w") as f:
-  #  f.write("Hyperparameter Optimization using random forest\n")
 
 def wav2MfccList(folder_path):
     mfcc_list = []
@@ -30,7 +20,7 @@ def wav2MfccList(folder_path):
         y = y[:63681]
 
         # Extract MFCC features
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=m)
+        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=1)
 
         # Append MFCC's to list
         mfcc_list.append(mfccs)
@@ -71,58 +61,18 @@ X = X.reshape(X.shape[0], -1)
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
+# Create a Random Forest classifier
+rf_classifier = RandomForestClassifier(n_estimators=4, random_state=42)
 
-progress = 0
-for num_trees in range(1,15):
-    for m in range(1,20):
-        progress += 1
+# Fit the model to the training data
+rf_classifier.fit(X_train, y_train)
 
-        # Create a Random Forest classifier
-        rf_classifier = RandomForestClassifier(n_estimators=num_trees, random_state=42)
+# Make predictions on the test data
+predictions = rf_classifier.predict(X_test)
 
-        # Fit the model to the training data
-        rf_classifier.fit(X_train, y_train)
+# Evaluate the accuracy
+accuracy = accuracy_score(y_test, predictions)
 
-        # Make predictions on the test data
-        predictions = rf_classifier.predict(X_test)
+print(accuracy)
 
-        # Evaluate the accuracy
-        accuracy = accuracy_score(y_test, predictions)
-        if accuracy > most_accurate:
-            most_accurate = accuracy
-            most_accurate_params = []
-            most_accurate_params.append(m)
-            most_accurate_params.append(num_trees)
-            most_accurate_params.append(most_accurate)
-        print(f"{progress}/{20*15}")
-       # with open("rf.csv","a") as f:
-          #  f.write(f"{m},{num_trees},{accuracy}\n")
-
-print("done")
-#with open("rf.txt","a") as f:
-   # f.write(f"\nMost accurate configuration is {most_accurate_params[0]} mfcc's, {most_accurate_params[1]} RF trees, which yielded {most_accurate_params[2]*100:.2f}% accuracy.")
-
-feature_names = [f"feature {i}" for i in range(X.shape[1])]
-
-from sklearn.inspection import permutation_importance
-import pandas as pd
-
-result = permutation_importance(
-    rf_classifier, X_test, y_test, n_repeats=10, random_state=42, n_jobs=2
-)
-
-forest_importances = pd.Series(result.importances_mean, index=feature_names)
-for i, sample in enumerate(forest_importances):
-    if sample != 0:
-        print(i)
-
-
-print(len(forest_importances))
-
-from matplotlib import pyplot as plt
-fig, ax = plt.subplots()
-forest_importances.plot.bar(yerr=result.importances_std, ax=ax)
-ax.set_title("Feature importances using permutation on full model")
-ax.set_ylabel("Mean accuracy decrease")
-fig.tight_layout()
-plt.show()
+print(port(rf_classifier))
