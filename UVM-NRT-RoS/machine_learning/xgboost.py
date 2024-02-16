@@ -63,10 +63,10 @@ X = X.reshape(X.shape[0], -1)
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-with open("xgb.txt","w") as f:
-    f.write("Hyperparameter Optimization using Random Forest\n\n")
-with open("xgb.csv", "w") as f:
-    f.write("num_estimators,learn_rate,accuracy\n")
+#with open("xgb.txt","w") as f:
+    #f.write("Hyperparameter Optimization using Random Forest\n\n")
+#with open("xgb.csv", "w") as f:
+   # f.write("num_estimators,learn_rate,accuracy\n")
 
 for num_est in range(1,30):
     for l_rate in np.arange(0.1,0.6,0.1):
@@ -78,5 +78,5 @@ for num_est in range(1,30):
 
         # Evaluate the accuracy
         accuracy = accuracy_score(y_test, predictions)
-        with open("xgb.csv","a") as f:
-            f.write(f"{num_est},{l_rate},{accuracy}\n")
+       # with open("xgb.csv","a") as f:
+       #     f.write(f"{num_est},{l_rate},{accuracy}\n")
