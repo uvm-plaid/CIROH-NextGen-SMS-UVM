@@ -59,24 +59,22 @@ nothing_labels = np.full(len(nothing),6)
 X = np.concatenate([light_rain,medium_rain,heavy_rain,heavy_couscous,light_couscous,mason_rain,nothing], axis=0)
 y = np.concatenate([light_rain_labels,med_rain_labels,heavy_rain_labels,heavy_couscous_labels,light_couscous_labels,mason_rain_labels,nothing_labels], axis=0)
 
-# Reshape the 3d array to 2d; sklearn can't process a 3d array
-X = X.reshape(X.shape[0], -1)
-
 # Convert to one-hot encoding
 NUM_CLASSES = 7
 y = np.eye(NUM_CLASSES)[y]
 
 # Split the data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+X_train = tf.reshape(X_train, (-1, 125))
 
 model = Sequential()
-model.add(layers.Dense(activation="relu",input_shape=(X_train[0].shape),units=128))
-model.add(layers.Dropout(0.2))
-model.add(layers.Dense(activation="relu",units=NUM_CLASSES))
-
+model.add(layers.Dense(200, activation='relu', input_shape=(X_train[0].shape)))
+model.add(layers.Dense(activation="relu",units=100))
+model.add(layers.Dense(activation="softmax",units=NUM_CLASSES))
 
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
-model.fit(X_train, y_train, epochs=5)
+model.fit(X_train, y_train, epochs=20,validation_split=0.2)
