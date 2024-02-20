@@ -6,7 +6,6 @@ import os
 import librosa
 import numpy as np
 import tensorflow as tf
-import tensorflow as tf
 keras = tf.keras
 from keras import Sequential, layers
 
@@ -24,7 +23,7 @@ def wav2MfccList(folder_path):
         y = y[:63681]
 
         # Extract MFCC features
-        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=1)
+        mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=10)
 
         # Append MFCC's to list
         mfcc_list.append(mfccs)
@@ -69,7 +68,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random
 X_train = tf.reshape(X_train, (-1, 125))
 
 model = Sequential()
-model.add(layers.Dense(200, activation='relu', input_shape=(X_train[0].shape)))
+model.add(layers.Dense(10, activation='relu', input_shape=(X_train[0].shape)))
 model.add(layers.Dense(activation="relu",units=100))
 model.add(layers.Dense(activation="softmax",units=NUM_CLASSES))
 
