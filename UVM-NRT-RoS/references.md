@@ -37,6 +37,7 @@ Precipation simulator (great reference for dew point/temp effects): https://scij
 # LoRa 
 
 Mesh Networking: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9930341
+
 I2C Communication (Wire Library): 
 - https://docs.arduino.cc/learn/communication/wire/
 - https://www.arduino.cc/reference/en/language/functions/communication/wire/
