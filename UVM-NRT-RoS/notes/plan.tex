@@ -4,29 +4,29 @@ Previous approaches to predicting rain using ML analysis of audio data
 show that the general approach is promising. However, our intended
 application has several novel aspects and system constraints. Previous
 related approaches have considered detection of rain events, or rain
-events amidst a host of other sound classifications. And while there
+events amidst a host of other sound classifications in urban settings.
+But we are interested in the more general problem of precipation phase
+detection, and operating in remote, alpine settings. And while there
 has been previous work on the integration rain detection analysis with
 low-cost embedded systems for audio data collection
 \cite{Avanzato_Fransesco_et_al.,Guico_et_al.}, these works have not
 considered ML in the edge- i.e., embedding the full process of data
-collection, feature extraction, and model prediction on a low-cost,
-low-powered platform.
+collection, feature extraction, and model classification on a low-cost,
+low-powered platform. We hypothesize that implementing the
+full detection workflow on-device will
+be more feasible than communicating streams of audio data
+over radio for analysis in the system back end.
 
-Additionally, we are interested spcifically in the more general
-problem of precipation phase detection. And we are interested in
-operating in remote, alpine settings. So, our ML problem has not
-been directly studied previously, though earlier work provides
-confidence in the general approach. 
-
-Thus, it is necessary for us to consider our problem ``from scratch''
-and not simply adapt existing models. And the computational and power
-characteristics of our application space recommend the use of simpler
-ML models. The Arduino platform can easily support implementations of
-decision trees, including ensembles and even boosting. However
-implementation of neural networks in low-cost embedded systems is
-currently a challenge. TensorFlow Lite has been developed for edge
-devices, for example, but it is only available on one Arduino platform
-that is not available for purchase at the time of this writing. While
+Thus, with respect to ML algorithm and feature selection, we can't adapt
+existing models for precipation phase detection
+from acoustic data. And the computational and power characteristics of our
+application space recommend the use of simpler ML models. The Arduino
+platform can easily support implementations of decision trees,
+including ensembles and even boosting. However implementation of
+neural networks in low-cost embedded systems is currently a
+challenge. TensorFlow Lite has been developed for edge devices, for
+example, but it is only available on one Arduino platform that is not
+available for purchase at the time of this writing. While
 implementation on, e.g., embedded Linux platforms would be feasible,
 this would entail an order of magnitude greater power consumption.
 
