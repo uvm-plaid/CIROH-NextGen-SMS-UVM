@@ -1,4 +1,16 @@
-## Related work
+## Relevant citations and references
+
+# AI with audio data 
+
+*Valerio Velardo series on YouTube*
+
+Audio features for ML overview: https://www.youtube.com/watch?v=ZZ9u1vUtcIA
+
+Focus on time domain features: https://www.youtube.com/watch?v=SRrQ_v-OOSg
+
+MFCCs: https://www.youtube.com/watch?v=4_SH2nfbQZ8&t=2s
+
+There is a Slack channel thesoundofai.slack.com that is expressly for discussing AI with audio data.
 
 # Audio data for RoS detection
 
