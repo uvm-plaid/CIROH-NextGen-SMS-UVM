@@ -68,11 +68,11 @@ class MfccExtractor:
 
         if self.one_hot_encode:
             # Convert to one-hot encoding
-            y = tf.one_hot(y, depth=self.num_classes, dtype=tf.float32)
-            X = tf.cast(X, dtype=tf.float32)
+            y = tf.one_hot(y, depth=self.num_classes, dtype=tf.int32)
+            X = np.array(X)
+            y = np.array(y)
 
-
-        # Split the data
+        X = np.squeeze(X, axis=1)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
         return X_train, X_test, y_train, y_test
