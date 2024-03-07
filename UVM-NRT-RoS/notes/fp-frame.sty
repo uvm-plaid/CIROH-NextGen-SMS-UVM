@@ -1,0 +1,44 @@
+% $Header: /home/repository/fpottier/javastacks/fp-frame.sty,v 1.1.1.1 2000/09/01 12:16:58 fpottier Exp $
+% Macros to put a frame around an arbitrary amount of vertical material.
+% The frame width is the current page width, even when in two-column mode.
+% Author: François Pottier (re-using code by Xavier Leroy and Didier Rémy)
+% Creation: August 29th, 1997
+
+% ---------------------------------------------------------------------------------------------------------------------
+% Usage: \begin{fpframe} ... \end{fpframe}
+
+\def\fpframe{%
+  \setbox0=\vbox\bgroup
+  \advance\hsize by -2\fboxsep
+  \advance\hsize by -2\fboxrule
+  \linewidth\hsize
+}
+
+\def\endfpframe{%
+\egroup\noindent\framebox[\textwidth]{\box0}}
+
+% ---------------------------------------------------------------------------------------------------------------------
+% Usage: \begin{fpfig}[htbp]{Caption}{label} ... \end{fpfig}
+% where
+%   + [htbp]  is the (optional) placement argument;
+%   + Caption is the figure's caption, possibly empty if no caption is desired.
+%   + label is the figure's label.
+
+\newenvironment{fpfig}[3][htbp]
+  {%
+    \begin{figure}[#1]% The first argument is the placement parameter.
+    \fpframe
+    \gdef\fpcaption{#2}% Save the second argument (the caption) for later.
+    \gdef\fplabel{#3}%   Save the third argument (the label) as well.
+  }
+  {%
+    \endfpframe
+    \ifx\fpcaption\empty
+    \else
+      \caption{\fpcaption}
+    \fi
+    \label{\fplabel}
+    \end{figure}%
+    \aftergroup\ignorespaces
+  }
+
