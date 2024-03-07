@@ -1,4 +1,4 @@
-## Relavant citations and references
+## Relevant citations and references
 
 # AI with audio data 
 
