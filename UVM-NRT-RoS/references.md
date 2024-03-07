@@ -4,9 +4,9 @@
 
 *Valerio Velardo series on YouTube*
 
-audio features for ML: https://www.youtube.com/watch?v=ZZ9u1vUtcIA
+Audio features for ML overview: https://www.youtube.com/watch?v=ZZ9u1vUtcIA
 
-time domain features: https://www.youtube.com/watch?v=SRrQ_v-OOSg
+Focus on time domain features: https://www.youtube.com/watch?v=SRrQ_v-OOSg
 
 MFCCs: https://www.youtube.com/watch?v=4_SH2nfbQZ8&t=2s
 
