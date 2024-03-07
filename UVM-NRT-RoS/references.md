@@ -38,6 +38,10 @@ Precipation simulator (great reference for dew point/temp effects): https://scij
 
 Mesh Networking: https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9930341
 
+I2C Communication (Wire Library): 
+- https://docs.arduino.cc/learn/communication/wire/
+- https://www.arduino.cc/reference/en/language/functions/communication/wire/
+
 # WiFi 
 
 The Mayfly is configured for a Bee, aka ESP8266, wifi module. We can probably use this library on the Mayfly for wifi, the client.connect function will allow communication over port 23 on the swarm. 
