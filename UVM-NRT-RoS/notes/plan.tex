@@ -14,15 +14,28 @@ low-powered platform.
 
 Additionally, we are interested spcifically in the more general
 problem of precipation phase detection. And we are interested in
-operating in remote, alpine settings.
+operating in remote, alpine settings. So, our ML problem has not
+been directly studied previously, though earlier work provides
+confidence in the general approach. 
 
-Altogether, the characteristics of our application space recommend
-the use of simpler ML models. The Arduino platform can easily support
-implementations of decision trees, including ensembles and even
-boosting. However implementation of neural networks is currently a
-challenge. While TensorFlow Lite has been developed for edge devices,
-for example, it is only available on one Arduino platform that is
-not available for purchase at the time of this writing. 
+Thus, it is necessary for us to consider our problem ``from scratch''
+and not simply adapt existing models. And the computational and power
+characteristics of our application space recommend the use of simpler
+ML models. The Arduino platform can easily support implementations of
+decision trees, including ensembles and even boosting. However
+implementation of neural networks in low-cost embedded systems is
+currently a challenge. TensorFlow Lite has been developed for edge
+devices, for example, but it is only available on one Arduino platform
+that is not available for purchase at the time of this writing. While
+implementation on, e.g., embedded Linux platforms would be feasible,
+this would entail an order of magnitude greater power consumption.
 
+\subsection{Machine Learning Experiments}
 
-
+We will evaluate SVM, Random Forest (RF), and boosted decision tree
+(XGBoost) architectures, as well as ensembles of these architectures.
+We will focus on models using features F1-F7. We evaluate both feature
+importance of F1-F7, and evaluate performance of models in terms of
+accuracy and ROC metrics. In our initial exploration we will use
+the dataset we developed for simulated rainfall and sleet at different
+intensities.
