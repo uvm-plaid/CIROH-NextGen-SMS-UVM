@@ -1,0 +1,9 @@
+../microphone-sampling/TestingSamples/WateringCan
+../microphone-sampling/TestingSamples/lightShower
+../microphone-sampling/TestingSamples/mediumShower
+../microphone-sampling/TestingSamples/heavyShower
+../microphone-sampling/TestingSamples/heavyCouscousHail
+../microphone-sampling/TestingSamples/lightCouscousHail
+../microphone-sampling/TestingSamples/MasonJarRain
+../microphone-sampling/TestingSamples/Nothing
+../microphone-sampling/TestingSamples/MasonJarRain
