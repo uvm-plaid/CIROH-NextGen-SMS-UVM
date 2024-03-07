@@ -1,2 +1,28 @@
 \section{Research Plan: ML Algorithms and Feature Extraction}
 
+Previous approaches to predicting rain using ML analysis of audio data
+show that the general approach is promising. However, our intended
+application has several novel aspects and system constraints. Previous
+related approaches have considered detection of rain events, or rain
+events amidst a host of other sound classifications. And while there
+has been previous work on the integration rain detection analysis with
+low-cost embedded systems for audio data collection
+\cite{Avanzato_Fransesco_et_al.,Guico_et_al.}, these works have not
+considered ML in the edge- i.e., embedding the full process of data
+collection, feature extraction, and model prediction on a low-cost,
+low-powered platform.
+
+Additionally, we are interested spcifically in the more general
+problem of precipation phase detection. And we are interested in
+operating in remote, alpine settings.
+
+Altogether, the characteristics of our application space recommend
+the use of simpler ML models. The Arduino platform can easily support
+implementations of decision trees, including ensembles and even
+boosting. However implementation of neural networks is currently a
+challenge. While TensorFlow Lite has been developed for edge devices,
+for example, it is only available on one Arduino platform that is
+not available for purchase at the time of this writing. 
+
+
+
