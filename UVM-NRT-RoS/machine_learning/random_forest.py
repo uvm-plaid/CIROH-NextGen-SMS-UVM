@@ -6,44 +6,48 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from matplotlib import pyplot as plt
 from MfccExtractor import MfccExtractor
+from AmplitudeEnvelopeExtractor import AmplitudeEnvelopeExtractor
+from RMS_Extractor import RMS_Extractor as RMS
 
 most_accurate = 0
 most_accurate_params = []
-#with open("rf.txt","w") as f:
- #   f.write("Hyperparameter Optimization using Random Forest\n\n")
-#with open("rf.csv", "w") as f:
-  #  f.write("Hyperparameter Optimization using random forest\n")
+with open("rf_rms.txt","w") as f:
+    f.write("Hyperparameter Optimization using Random Forest\n\n")
+with open("rf_rms.csv", "w") as f:
+    f.write("Hyperparameter Optimization using random forest\n")
 
 mfcc_extractor = MfccExtractor(num_mfcc=1)
-X_train,X_test,y_train,y_test = mfcc_extractor.get_data()
+ae_extractor = AmplitudeEnvelopeExtractor()
+rms_extractor = RMS()
+X_train,X_test,y_train,y_test = rms_extractor.get_data()
 
+#rf = RandomForestClassifier(n_estimators=6,random_state=42)
+#rf.fit(X_train,y_train)
+#predictions = rf.predict(X_test)
+# Evaluate the accuracy
+#accuracy = accuracy_score(y_test, predictions)
+#print(accuracy)
 
-progress = 0
-for num_trees in range(1,15):
-    for m in range(1,20):
-        progress += 1
+for num_trees in range(1,51):
+    # Create a Random Forest classifier
+    rf_classifier = RandomForestClassifier(n_estimators=num_trees, random_state=42)
 
-        # Create a Random Forest classifier
-        rf_classifier = RandomForestClassifier(n_estimators=num_trees, random_state=42)
+    # Fit the model to the training data
+    rf_classifier.fit(X_train, y_train)
 
-        # Fit the model to the training data
-        rf_classifier.fit(X_train, y_train)
+    # Make predictions on the test data
+    predictions = rf_classifier.predict(X_test)
 
-        # Make predictions on the test data
-        predictions = rf_classifier.predict(X_test)
-
-        # Evaluate the accuracy
-        accuracy = accuracy_score(y_test, predictions)
-        if accuracy > most_accurate:
-            most_accurate = accuracy
-            most_accurate_params = []
-            most_accurate_params.append(m)
-            most_accurate_params.append(num_trees)
-            most_accurate_params.append(most_accurate)
-        print(f"{progress}/{20*15}")
-       # with open("rf.csv","a") as f:
-          #  f.write(f"{m},{num_trees},{accuracy}\n")
+    # Evaluate the accuracy
+    accuracy = accuracy_score(y_test, predictions)
+    if accuracy > most_accurate:
+        most_accurate = accuracy
+        most_accurate_params = []
+        most_accurate_params.append(num_trees)
+        most_accurate_params.append(most_accurate)
+    with open("rf_rms.csv","a") as f:
+        f.write(f"{num_trees},{accuracy}\n")
 
 print("done")
-#with open("rf.txt","a") as f:
-   # f.write(f"\nMost accurate configuration is {most_accurate_params[0]} mfcc's, {most_accurate_params[1]} RF trees, which yielded {most_accurate_params[2]*100:.2f}% accuracy.")
+with open("rf_rms.txt","a") as f:
+    f.write(f"\nMost accurate configuration is {most_accurate_params[0]} RF trees, which yielded {most_accurate_params[1]*100:.2f}% accuracy.")
