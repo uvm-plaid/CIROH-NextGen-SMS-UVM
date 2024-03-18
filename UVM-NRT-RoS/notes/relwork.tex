@@ -1,2 +1,87 @@
-\section{Background: Feature Extraction}
+\section{Background: ML Algorithms and Feature Extraction}
+
+A variety of recent work has studied classification of environmental
+sounds using machine learning analysis of audio data collected by
+embedded devices \cite{electronics11223743,Mu2021,s22093504},
+including detection of rain
+\cite{quteprints82848,Ferroudj_et_al.,Guico_et_al.,Avanzato_et_al.}. This
+previous work has considered a menagerie of ML algorithms, from SVMs and
+decision tree architectures
+\cite{s22093504,quteprints82848,Guico_et_al.}  to neural networks
+\cite{Avanzato_et_al.,Mu2021}, as well as statistical (e.g., Bayesian)
+analysis \cite{s22093504,Avanzato_et_al.}.
+
+\subsection{Feature Extraction}
+\label{relwork-features}
+
+Prior to algorithm choices, a primary consideration in any machine
+learning analysis of audio data is feature extraction. Electronic
+formats for sound- e.g., .wav- record audio as time series data.
+These recordings themselves and other aggregate data directly
+extracted from it, such as zero crossing rate (ZCR) and root mean
+squared energy (RMSE), are generally termed \emph{time domain} audio
+data.  Time domain data is also commonly cast into the \emph{frequency
+domain} as a \emph{spectogram} via Fourier transformation, especially as a Mel
+spectogram. Additional manipulation of the Mel spectogram obtains
+frequency domain features in the form of Mel-frequency cepstral
+coefficients (MFCCs), which are a dominant feature in ML analysis of
+audio data.
+
+Both time and frequency domain audio features have been used in
+previous related work. Features of most effective models for rainfall
+detection
+\cite{Avanzato_et_al.,Avanzato_Fransesco_et_al.,quteprints82848}
+include the following:
+\begin{enumerate}[\hspace{5mm}F1.]
+\item Mel-frequency Cepstral Coefficients (MFCCs)
+\item First Autocorrelation Coefficient (ACC)
+\item Zero Crossing Rate (ZCR)
+\item Temporal and Spectoral Entropy Indices (H$_t$ and H$_f$)
+\item Acoustic Complexity Index (ACI)
+\item Background Noise (BgN)
+\item Spectral Cover (SC)
+\end{enumerate}
+The way these features are used varies significantly depending on
+the approach. 
+A variety of work has focused on MFCCs, especially neural network
+based approaches \cite{Avanzato_et_al.,Avanzato_Fransesco_et_al.}.
+Approaches using simpler modeling algorithms, such as SVMs and
+Decision trees, have used F3-F7 \cite{quteprints82848}. And statistical
+analysis in previous work ``shows the possibility of being able to
+clearly discriminate all levels of rainfall intensity through the
+parameters of zero crossing rate and first autocorrelation
+coefficient'' (F1 and F2) \cite{Avanzato_et_al.}. Some related work in
+environmental sound classification has also considered sophisticated
+combinations of time- and frequency-domain features , so-called joint
+signal analysis, to obtain better model performance
+\cite{electronics11223743}.
+
+Some more recent work has leveraged the power of deep learning to more
+directly and automatically extract features from ``raw''
+spectograms. This includes approaches to rain detection where the
+spectogram itself is the feature set \cite{Avanzato_et_al.}, and
+approaches to general environemental sound classification where neural
+networks are used to automatically extract features from spectograms
+\cite{electronics11223743}.
+
+\subsection{ML Algorithms and Performance}
+
+Earlier work on rain detection from acoustic signals considered simple
+ML algorithms such as SVMs and decision trees \cite{quteprints82848}.
+Later work, both in rain detection and environmental sound detection
+more generally, has considered ensemble methods and boosting
+\cite{electronics11223743,s22093504}. As in many other areas,
+interest has recently grown in neural network approaches to modeling
+\cite{Avanzato_et_al.,Avanzato_Fransesco_et_al.,electronics11223743},
+particularly CNNs.
+
+Interestingly, none of these methods seems to significantly outperform
+the earliest work on rainfall prediction \cite{quteprints82848} using
+SVM classifiers and features F3-F7, where accuracy of 93\% was
+achieved, though competitive baseline performance metrics have been
+reported for essentially all of the previous work discussed so
+far. More recent work using neural network models has made some
+contextual advancements, for example successful integration with a
+low-cost, low-power embedded system \cite{Avanzato_Fransesco_et_al.},
+and rain detection in challenging urban environments \cite{s22093504}.
 
