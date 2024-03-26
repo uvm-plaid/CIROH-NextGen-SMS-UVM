@@ -76,3 +76,5 @@ Device documentation: https://swarm.space/documentation-swarm/
 
 ReST API documentation: https://swarm.space/wp-content/uploads/2022/01/Swarm-Hive-API-Integration-Guide.pdf
 
+Hive credentials (uname/passwd/email): wintersmind/UVM4ever/ceskalka@uvm.edu     
+

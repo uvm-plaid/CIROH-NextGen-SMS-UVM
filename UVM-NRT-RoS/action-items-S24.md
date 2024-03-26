@@ -48,8 +48,9 @@
 
 ### Lars
 
-1. Repair circuit
-2. Start recording sound on the setup.
+1. Attach the antenna to SWARM and do a hello world test.
+2. Connect via wifi on a laptop to SWARM and do some initial tests.
+3. Solder Header pins onto WiFi Board once it arrives (probably outsource this to Jamie)
    
 *progress*
 
