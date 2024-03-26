@@ -15,7 +15,7 @@
   * Change the sampling rate. 44100 is another common value for audio sampling.
   *  Modify the buffer size in /Users/<your-username>/Documents/Arduino/libraries/TMRpcm/pcmConfig.h on line 29. Has to be an even number, default is 128.
 
-# Wiring Notes:
+### Wiring Notes:
 1. There is a switched 5V pin on the mayfly, use that to power the circuit. It's titled "Sv5" on the board, next to all of the analog pins.
 2. I have been using a 100k resistor for maximum sensitivity. If it's too sensitive, change this to a lower value resistor.
 3. Make sure you connect the right microphone pins. The ground pin is the one with 3 metal lines coming off of the pin. 
