@@ -15,7 +15,14 @@
   * Change the sampling rate. 44100 is another common value for audio sampling.
   *  Modify the buffer size in /Users/<your-username>/Documents/Arduino/libraries/TMRpcm/pcmConfig.h on line 29. Has to be an even number, default is 128.
 
-## Wiring Notes:
+### Wiring Notes:
 1. There is a switched 5V pin on the mayfly, use that to power the circuit. It's titled "Sv5" on the board, next to all of the analog pins.
 2. I have been using a 100k resistor for maximum sensitivity. If it's too sensitive, change this to a lower value resistor.
 3. Make sure you connect the right microphone pins. The ground pin is the one with 3 metal lines coming off of the pin. 
+
+## Comments on Future Modifications to Setup
+1. Increase the length of the wires connecting the breadboard to the microphone. Given the current setup, the mayfly and the computer are too close to the actual microphone. If sampling when it's snowing/raining, it makes it difficult to avoid the mayfly and computer getting wet. I would recommend finding roughly a 10-foot-long jumper wire if possible, potentially with some sort of weatherized casing.
+2. The microphone doesn't really stay in the pin holes of the jumper wires. Explore making this connection stronger, potentially through  soldering them together.
+3. Find a better way to encapsulate the mayfly and breadboard in order to protect it from the elements, and secure them in place. Currently is in a plastic takeout container with holes cut out to plug the USB-c in, and the mayfly and breadboard are duct-taped together in it.
+4. For the cone + pole setup, wind can cause the cone to swing around and bump into the microphone. Would be great to secure it in place somehow without affecting the sound. 
+
