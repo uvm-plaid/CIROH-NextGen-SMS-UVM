@@ -1,10 +1,17 @@
 // Source: https://www.instructables.com/Speech-Recognition-With-an-Arduino-Nano/
 
-const int SAMPLE_LENGTH = 1000; // 1000ms
-int *amplitudes;
+const short SAMPLE_LENGTH = 1000; // 1000ms
+short *amplitudes;
 
-const int AUDIO_IN = A0;
-const int AMPLITUDES_LENGTH = SAMPLE_LENGTH*7; // Getting approximately 6600-6950 amplitudes/audio samples per second
+const short AUDIO_IN = A0;
+const short AMPLITUDES_LENGTH = SAMPLE_LENGTH*7; // Getting approximately 6600-6950 amplitudes/audio samples per second
+
+short index;
+const short WINDOW_LENGTH = 30; // 30 ms
+
+double hamming_window(int n, int N) {
+    return (0.54 - 0.46 * cos(2 * M_PI * n / (N - 1)));
+}
 
 void setup() {
   Serial.begin(115200);
@@ -14,32 +21,6 @@ void setup() {
   amplitudes = new int[AMPLITUDES_LENGTH];
 }
 
-void calculate_amplitudes(int amplitudes[]){
-  // Start timer
-  double t0 = millis();
-  int amplitude = -1;
-  int index = 0;
-  // Record Amplitudes
-  while (millis()-t0 < SAMPLE_LENGTH){
-    ++index;
-    amplitude = analogRead(AUDIO_IN);
-    amplitudes[index] = amplitude;
-  }
-  // Fill in remaining amplitude values with -1
-  for(int i = index; i < AMPLITUDES_LENGTH; ++i){
-    amplitudes[i] = 0;
-  }
-  // Print results
-  Serial.print("Time to fill ");
-  Serial.print(index);
-  Serial.print("-length array (ms): ");
-  Serial.println(millis()-t0);
-  Serial.print("Sample Rate (Hz): ");
-  Serial.println(index);
-}
-
-short index;
-const short WINDOW_LENGTH = 30; // 30 ms
 void loop() {
 
   /**********
@@ -90,7 +71,7 @@ void loop() {
   // 2b) Create 2d-array, windows, where rows are each window, and cols are amplitude values for windows
   short ROWS = n_windows;
   short COLS = WINDOW_LENGTH * (static_cast<double>(index) / 1000.0);
-  short *windows[ROWS][COLS];
+  short windows[ROWS][COLS];
   
   short bad_readings = 0;
   for (short r = 0; r < ROWS; ++r){
@@ -114,4 +95,22 @@ void loop() {
       windows[r][c] = amplitude_value;
     }
   }
+  /**********
+  STEP 3: Windowing Function
+  Apply windowing function to each element of the array
+  **********/
+  for(short r = 0; r < ROWS; ++r){
+    for(short c = 0; c < COLS; ++c){
+      // Get the amplitude value
+      short amplitude_value = windows[r][c];
+      // Apply the Hamming window function to the amplitude value
+      amplitude_value = static_cast<short>(amplitude_value * hamming_window(c, COLS));
+      windows[r][c] = amplitude_value;
+    }
+  }
+  /**********
+  STEP 4: Fast Fourier Transform
+  **********/
+  
+
 }
