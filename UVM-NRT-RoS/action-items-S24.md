@@ -48,8 +48,8 @@
 
 ### Lars
 
-1. Repair circuit
-2. Start recording sound on the setup.
+1. Test the ESP wifi chip on the arduino and do some basic functions
+2. Try and send a message from the arduino to the SWARM uplink to the satellite 
    
 *progress*
 
