@@ -4,6 +4,8 @@ Tutorial for setting up Wifi Bee: [https://tttapa.github.io/ESP8266/Chap03%20-%2
 
 I think we can use this library to communicate to the wifi bee from the mayfly: https://github.com/EnviroDIY/TinyGSM/blob/master/README.md
 
+Need to Buy: https://www.dfrobot.com/index.php?route=product/product&product_id=72&search=FTDI&description=true#.Vp3NdVlPrzY
+
 Notes:
 - We need to have the power led on, as well as the network connections. Need to have SJ17 and SJ16 soldered.
 - If we want to have constant power supplied to the Wi-FiBee module, we should also have SJ18 soldered. 
