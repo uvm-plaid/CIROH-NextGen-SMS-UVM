@@ -10,3 +10,10 @@ Notes:
 - We need to have the power led on, as well as the network connections. Need to have SJ17 and SJ16 soldered.
 - If we want to have constant power supplied to the Wi-FiBee module, we should also have SJ18 soldered. 
 - [Need to set it up to receive commands through serial from the mayfly]([url](https://wiki.dfrobot.com/SKU_TEL0092_WiFi_Bee-ESP8266_Wirelss_module#target_5))
+
+
+TODOS:
+- Check out the https://github.com/bportaluri/WiFiEsp/tree/master library
+- Try and send NEMA checksums
+- Read Chris's slack messages
+- Have Jamie solder the LEDs
