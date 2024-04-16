@@ -48,9 +48,8 @@
 
 ### Lars
 
-1. Attach the antenna to SWARM and do a hello world test.
-2. Connect via wifi on a laptop to SWARM and do some initial tests.
-3. Solder Header pins onto WiFi Board once it arrives (probably outsource this to Jamie)
+1. Test the ESP wifi chip on the arduino and do some basic functions
+2. Try and send a message from the arduino to the SWARM uplink to the satellite 
    
 *progress*
 
