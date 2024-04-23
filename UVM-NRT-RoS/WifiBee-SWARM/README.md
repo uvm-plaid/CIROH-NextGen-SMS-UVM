@@ -21,5 +21,5 @@ SWARM Example: https://github.com/Swarm-Technologies/Getting-Started
 ### TODOS:
 - Check out the https://github.com/bportaluri/WiFiEsp/tree/master library
 - Try and send NEMA checksums
-- Read Chris's slack messages
-- Have Jamie solder the LEDs
+- NEW: Open a TCP socket with a tcp client
+  - Might need to "spoof" the telnet connection
