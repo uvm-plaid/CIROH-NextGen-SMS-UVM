@@ -19,9 +19,6 @@ SWARM Example: https://github.com/Swarm-Technologies/Getting-Started
 
 
 ### TODOS:
-- Check out the https://github.com/bportaluri/WiFiEsp/tree/master library
-- Try and send NEMA checksums
-- NEW: Open a TCP socket with a TCP client
-  - Might need to "spoof" the telnet connection
-  - 
-- Try and connect the wifi bee on the Arduino to swarm after programming it. 
+- Improve the code that works with the Giga.
+- Try and Get WiFi Shield with Mayfly to work.
+
