@@ -1,24 +1,20 @@
-### Wifi Bee:
-Documentation for the ESP8266 WIFI Bee Shield: https://github.com/esp8266/Arduino?tab=readme-ov-file#installing-with-boards-manager
-
-Tutorial for setting up Wifi Bee: [https://tttapa.github.io/ESP8266/Chap03%20-%20Software.html](https://arduino-esp8266.readthedocs.io/en/latest/installing.html#boards-manager)
-
-I think we can use this library to communicate to the wifi bee from the mayfly: https://github.com/EnviroDIY/TinyGSM/blob/master/README.md
-
-
-### SWARM:
-Library for SWARM on Arduino: https://github.com/sparkfun/SparkFun_Swarm_Satellite_Arduino_Library/tree/main
-
-SWARM Example: https://github.com/Swarm-Technologies/Getting-Started
-
-
-### Notes:
-- We need to have the power led on, as well as the network connections. Need to have SJ17 and SJ16 soldered.
-- If we want to have constant power supplied to the Wi-FiBee module, we should also have SJ18 soldered. 
-- [Need to set it up to receive commands through serial from the mayfly]([url](https://wiki.dfrobot.com/SKU_TEL0092_WiFi_Bee-ESP8266_Wirelss_module#target_5))
-
-
 ### TODOS:
-- Improve the code that works with the Giga.
+- Improve the code that works with the Giga to connect to the SWARM -> turn it into an API.
 - Try and Get WiFi Shield with Mayfly to work.
+  
+### SWARM:
+- Website for Tracking Sattelite Passes: https://kube.tools.swarm.space/pass-checker/
+- HIVE Database: https://bumblebee.hive.swarm.space/
+  - Hive credentials (uname/passwd/email): wintersmind/UVM4ever/ceskalka@uvm.edu
+- Device documentation: https://swarm.space/documentation-swarm/
+- ReST API documentation: https://swarm.space/wp-content/uploads/2022/01/Swarm-Hive-API-Integration-Guide.pdf
 
+### Mayfly Notes:
+- To get the wifi status lights to work, you need to have SJ17 and SJ16 soldered.
+- If we want to have constant power supplied to the Wi-FiBee module, we should also have SJ18 soldered.
+- Will need to pass all commands to the mayfly
+
+### Wifi Bee:
+- Suggested library by Mayfly makers to use with WiFi Bee: https://github.com/EnviroDIY/TinyGSM/blob/master/README.md
+- Wiki for setting up Wifi Bee: https://wiki.dfrobot.com/SKU_TEL0092_WiFi_Bee-ESP8266_Wirelss_module
+  - Link to the product: https://www.dfrobot.com/product-1279.html
