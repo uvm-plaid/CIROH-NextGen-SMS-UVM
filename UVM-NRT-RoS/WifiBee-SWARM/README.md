@@ -1,6 +1,6 @@
 ### TODOS:
-- Improve the code that works with the Giga to connect to the SWARM -> turn it into an API.
-- Try and Get WiFi Shield with Mayfly to work.
+- Improve the code that works with the Giga to connect to the SWARM.
+- Try and Get WiFi Shield with Mayfly to work?
   
 ### SWARM:
 - Website for Tracking Sattelite Passes: https://kube.tools.swarm.space/pass-checker/
