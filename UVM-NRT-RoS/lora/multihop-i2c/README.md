@@ -11,9 +11,9 @@ Mayfly.
 ## Setup
 
 Refer to the Wire library to setup the I2C connections between the LoRa boards
-and the Mayflys. The pictures below illustrate the neccesary connections. 
-Platformio is to build and upload the files for each of the nodes and to
-monitor the serial output from the devices. 
+and the Mayflys. The pictures in the images directory illustrate the neccesary 
+connections. Platformio is used to build and upload the files for each of the 
+nodes and to monitor the serial output from the devices. 
 
 Useful `pio` commands are:
 
