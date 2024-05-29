@@ -1,19 +1,29 @@
-Documentation for the ESP8266 WIFI Bee Shield: https://github.com/esp8266/Arduino?tab=readme-ov-file#installing-with-boards-manager
+### TODOS:
+- Improve the code that works with the Giga to connect to the SWARM.
+- Try and Get WiFi Shield with Mayfly to work?
 
-Tutorial for setting up Wifi Bee: [https://tttapa.github.io/ESP8266/Chap03%20-%20Software.html](https://arduino-esp8266.readthedocs.io/en/latest/installing.html#boards-manager)
+### Working with the Giga and GigaWifi.ino:
+1. Make sure you download both the .ino file and the arduino_secrets.h file, which contains the wifi information for the swarm.
+2. Upload the .ino file to the Giga and turn on the SWARM.
+3. Wait until you see the Serial Monitor (connect at 9600 baud) output the successful connection messages.
+4. Once you're connected, you can read the status messages from the SWARM by sending 'r' over serial to the Giga.
+5. Wait for the "$M138 DATETIME*56" message. You may have to wait and send 'r' several times before you see it.
+6. Now you can send "Hello World" to the SWARM by sending 's' over serial.
+7. Send 'r' until you get a "$TD OK ..." message back, which means the message was accepted.
+   
+### SWARM:
+- Website for Tracking Sattelite Passes: https://kube.tools.swarm.space/pass-checker/
+- HIVE Database: https://bumblebee.hive.swarm.space/
+  - Hive credentials (uname/passwd/email): wintersmind/UVM4ever/ceskalka@uvm.edu
+- Device documentation: https://swarm.space/documentation-swarm/
+- ReST API documentation: https://swarm.space/wp-content/uploads/2022/01/Swarm-Hive-API-Integration-Guide.pdf
 
-I think we can use this library to communicate to the wifi bee from the mayfly: https://github.com/EnviroDIY/TinyGSM/blob/master/README.md
+### Mayfly Notes:
+- To get the wifi status lights to work, you need to have SJ17 and SJ16 soldered.
+- If we want to have constant power supplied to the Wi-FiBee module, we should also have SJ18 soldered.
+- Will need to pass all commands to the mayfly
 
-Need to Buy: https://www.dfrobot.com/index.php?route=product/product&product_id=72&search=FTDI&description=true#.Vp3NdVlPrzY
-
-Notes:
-- We need to have the power led on, as well as the network connections. Need to have SJ17 and SJ16 soldered.
-- If we want to have constant power supplied to the Wi-FiBee module, we should also have SJ18 soldered. 
-- [Need to set it up to receive commands through serial from the mayfly]([url](https://wiki.dfrobot.com/SKU_TEL0092_WiFi_Bee-ESP8266_Wirelss_module#target_5))
-
-
-TODOS:
-- Check out the https://github.com/bportaluri/WiFiEsp/tree/master library
-- Try and send NEMA checksums
-- Read Chris's slack messages
-- Have Jamie solder the LEDs
+### Wifi Bee:
+- Suggested library by Mayfly makers to use with WiFi Bee: https://github.com/EnviroDIY/TinyGSM/blob/master/README.md
+- Wiki for setting up Wifi Bee: https://wiki.dfrobot.com/SKU_TEL0092_WiFi_Bee-ESP8266_Wirelss_module
+  - Link to the product: https://www.dfrobot.com/product-1279.html
