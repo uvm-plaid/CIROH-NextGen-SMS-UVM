@@ -6,17 +6,8 @@ In this file, the following features
 Autocorrelation Coefficient (ACC), Zero Crossing Rate (ZCR), Temporal Entropy (Ht), Spectral Entropy (Hf),
 Acoustic Complexity Index (ACI), Spectral Cover (SC)
 
-TODO: Add Background Noise features (BgN)
-
 The following models are used: Support Vector Machine (SVM), Random Forests (RF), XGBoost (XGB), and Logistic Regression (LR)
-
-TODO: Try different hyperparams for RF etc.
-
-Feature importance is used to determine which audio features add to the model
-TODO: Implement feature importance
 '''
-
-
 
 import librosa
 import librosa.display
@@ -27,59 +18,47 @@ import os
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import LeaveOneOut, train_test_split
+from sklearn import metrics
+from sklearn.model_selection import LeaveOneOut, train_test_split, KFold
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
-from sklearn.inspection import permutation_importance
 import statsmodels.api as sm
 import maad
 from maad.features import temporal_entropy
-from maad.features import spectral_entropy
 import scipy
 from scipy import signal
-
-import xgboost as xgb
 from sklearn.ensemble import GradientBoostingClassifier
 
 def main():
     #--------------Extracting audio features for each category of audio samples-------------------------------
     # light_rain, medium_rain, etc. will contain all of the audio features, concatenated, after the function returns
     light_rain_features = wav_to_audio_features("../microphone-sampling/TestingSamples/lightShower/")
-    # print(light_rain_features.shape)
     medium_rain_features = wav_to_audio_features("../microphone-sampling/TestingSamples/mediumShower/")
-    # print(medium_rain_features.shape)
-    heavy_rain_features = wav_to_audio_features("../microphone-sampling/TestingSamples/heavyShower/")
-    # print(heavy_rain_features.shape)
     heavy_couscous_features = wav_to_audio_features("../microphone-sampling/TestingSamples/heavyCouscousHail/")
-    # print(heavy_couscous_features.shape)
     light_couscous_features = wav_to_audio_features("../microphone-sampling/TestingSamples/lightCouscousHail/")
-    # print(light_couscous_features.shape)
     mason_rain_features = wav_to_audio_features("../microphone-sampling/TestingSamples/MasonJarRain/")
-    # print(mason_rain_features.shape)
     nothing_features = wav_to_audio_features("../microphone-sampling/TestingSamples/Nothing/")
-    # print(nothing_features.shape)
-    watering_can_features = wav_to_audio_features("../microphone-sampling/TestingSamples/WateringCan/")
-    # print(watering_can_features.shape)
+    #watering_can_features = wav_to_audio_features("../microphone-sampling/TestingSamples/WateringCan/")
+    real_snow_features = wav_to_audio_features("../microphone-sampling/TestingSamples/RealSnow/")
 
-    
     #--------------------Create Labels for Light, Medium, Heavy, etc.-------------------------------------
     light_rain_labels = np.full(len(light_rain_features), "light rain")
     med_rain_labels = np.full(len(medium_rain_features), "medium rain")
-    heavy_rain_labels = np.full(len(heavy_rain_features), "heavy rain")
     heavy_couscous_labels = np.full(len(heavy_couscous_features), "heavy couscous hail")
     light_couscous_labels = np.full(len(light_couscous_features), "light couscous hail")
     mason_rain_labels = np.full(len(mason_rain_features), "mason jar rain")
     nothing_labels = np.full(len(nothing_features), "nothing")
-    watering_can_labels = np.full(len(watering_can_features), "watering can")
+    #watering_can_labels = np.full(len(watering_can_features), "watering can")
+    real_snow_labels = np.full(len(real_snow_features), "real snow")
 
     #----------------------Concatenating the features and labels into X (features) and Y (labels)----------------
     # Concatenate together the 8 NumPy arrays into one array, which will be the features array
-    X = np.concatenate([light_rain_features, medium_rain_features, heavy_rain_features, heavy_couscous_features,
-                        light_couscous_features, mason_rain_features, nothing_features, watering_can_features], axis=0)
+    X = np.concatenate([light_rain_features, medium_rain_features, heavy_couscous_features,
+                        light_couscous_features, mason_rain_features, nothing_features, real_snow_features], axis=0)
     # Concatenate together the 8 NumPy LABEL arrays into one array, which will be the target array
     Y = np.concatenate(
-        [light_rain_labels, med_rain_labels, heavy_rain_labels, heavy_couscous_labels, light_couscous_labels,
-         mason_rain_labels, nothing_labels, watering_can_labels], axis=0)
+        [light_rain_labels, med_rain_labels, heavy_couscous_labels, light_couscous_labels,
+         mason_rain_labels, nothing_labels, real_snow_labels], axis=0)
     df = pd.DataFrame(X)
     df['target'] = Y
 
@@ -103,9 +82,6 @@ def wav_to_audio_features(folder_path):
         full_path = os.path.join(folder_path, filename)
         x, sr = librosa.load(full_path)
 
-        #TODO: Try maad.sound.load for Ht, Hf, ACI and SC?? See if that makes a difference??
-
-
         # Get a spectrogram to use as the input to the spectral_entropy, ACI, and spectral cover functions
         # f is the array of sample frequencies
         # t is the array of segment times
@@ -116,21 +92,15 @@ def wav_to_audio_features(folder_path):
         acc = extract_ACC(x)
         ACC_list.append(acc)
 
-
         # Extracting Zero Crossing Rate
         zcr = extract_ZCR(x)
         ZCR_list.append(zcr)
-
 
         #Extracting Temporal Entropy (Ht)
         Ht = extract_Ht(x)
         Ht_list.append([Ht])
 
         #Extract Spectral Entropy (Hf)
-        #TODO: Maybe try power spectrum instead? See if you can get it working
-        # Need to provide a spectrogram (we will use a PSD (power spectral density), as recommended by the spectral_entropy function)
-        # pxx, frequencies = plt.psd(x, sr)
-
         Hf = extract_Hf(sxx, f)
         Hf_list.append([Hf])
 
@@ -139,12 +109,9 @@ def wav_to_audio_features(folder_path):
         ACI = extract_ACI(sxx)
         ACI_list.append([ACI])
 
-
         #-------------Spectral Cover (SC)---------------------------------
         #Using the maad spectrogram for SC to get the ext variable,
         #to be able to get the spectrogram with no noise.
-        #TODO: Should spectral entropy also use maad.sound.spetrogram? Try interchanging theses
-
         SC = extract_SC(x, sr)
         SC_list.append(SC)
 
@@ -172,25 +139,27 @@ def extract_Ht(audio_signal):
     return maad.features.temporal_entropy(audio_signal)
 
 def extract_Hf(spectrogram, frequency_samples):
-    # It seems like all of the parameters need to be listed to get the correct output
-    # Use EAS because that is the Entropy of Average SpectruM
+    # It seems like all the parameters need to be listed to get the correct output
+    # Use EAS because that is the Entropy of Average Spectrum
     EAS, ECU, ECV, EPS, EPS_KURT, EPS_SKEW = maad.features.spectral_entropy(spectrogram, frequency_samples)
-    #TODO: Should only EAS be used? Would it help if we also used the other outputs? Look into
     return EAS
 
 def extract_ACI(spectrogram):
     _, _, ACI = maad.features.acoustic_complexity_index(spectrogram)
     return ACI
+
 def extract_SC(audio_signal, sampling_rate):
     sxx_power, tn, fn, ext = maad.sound.spectrogram(audio_signal, sampling_rate)
     sxx_no_noise = maad.sound.median_equalizer(sxx_power, display=True, extent=ext)
     sxx_dB_no_noise = maad.util.power2dB(sxx_no_noise)
     LFC, MFC, HFC = maad.features.spectral_cover(sxx_dB_no_noise, fn)
     return [LFC, MFC, HFC]
+
 def run_models(X, Y):
     # Performing SVM, RF, and XGBoost algorithms with and without leave one out cross validation
     # and recording the accuracies
     all_accuracies = []
+    all_roc = []
 
     #feature_names = ["ACC", "ZCR", "Ht", "Hf", "ACI", "SC"]
     feature_names = [f"feature{i}" for i in range(X.shape[1])]
@@ -201,6 +170,7 @@ def run_models(X, Y):
 
     loo = LeaveOneOut()
     accuracies = []
+
     for train_index, test_index in loo.split(X):
         X_train, X_test = X[train_index], X[test_index]
         Y_train, Y_test = Y[train_index], Y[test_index]
@@ -249,107 +219,80 @@ def run_models(X, Y):
     all_accuracies.append(accuracy_RF)
     print("Accuracy (RF no LOO):", accuracy_RF)
 
-    #Feature importance
-    #TODO: Change n_repeats and n_jobs?
-
-    '''
-    result_rf = permutation_importance(
-        clf, X_test, Y_test, n_repeats=10, random_state=42, n_jobs=2
-    )
-    rf_importances = pd.Series(result_rf.importances_mean, index=feature_names)
-
-    fig, ax = plt.subplots()
-    rf_importances.plot.bar(yerr=result_rf.importances_std, ax=ax)
-    ax.set_title("Feature importances using permutation on full model: RF")
-    ax.set_ylabel("Mean accuracy decrease")
-    fig.tight_layout()
-    plt.show()
-
-    '''
     #-------------------------IMPLEMENTING XgBoost--------------------------------------
-    '''
-    print("In XGBOOST")
-    loo = LeaveOneOut()
-    accuracies_xgboost = []
+    # XGBoost with 3-fold CV
+    cv = KFold(n_splits=3, random_state=1, shuffle=True)
+    accuracies_xg = []
 
-    for train_index, test_index in loo.split(X):
+    for train_index, test_index in cv.split(X):
         X_train, X_test = X[train_index], X[test_index]
         Y_train, Y_test = Y[train_index], Y[test_index]
 
-        #clf = xgb.XGBClassifier(n_estimators=100, random_state=42)
-        clf = GradientBoostingClassifier(n_estimators=100, random_state=42)
-        clf.fit(X_train, Y_train)
-        Y_pred = clf.predict(X_test)
+        xgclf = GradientBoostingClassifier(n_estimators=100, random_state=42)
+        xgclf.fit(X_train, Y_train)
+        Y_pred = xgclf.predict(X_test)
         accuracy = accuracy_score(Y_test, Y_pred)
-        accuracies_xgboost.append(accuracy)
+        accuracies_xg.append(accuracy)
 
-    mean_accuracy_RF_LOO = np.mean(accuracies_xgboost)
-    all_accuracies.append(mean_accuracy_RF_LOO)
-    print("Mean Accuracy (XGBoost): ", mean_accuracy_RF_LOO)
+    mean_accuracy_XG_3_Fold = np.mean(accuracies_xg)
+    all_accuracies.append(mean_accuracy_XG_3_Fold)
+    print("Mean Accuracy (XGBoost): ", mean_accuracy_XG_3_Fold)
 
-    # XGBoost without leave one out
+    # XGBoost without CV
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
-    clf = GradientBoostingClassifier(n_estimators=100, random_state=42)
-    clf.fit(X_train, Y_train)
-    Y_pred = clf.predict(X_test)
-    accuracy_RF = accuracy_score(Y_test, Y_pred)
-    all_accuracies.append(accuracy_RF)
-    print("Accuracy (XGBoost no LOO):", accuracy_RF)
+    xgclf2 = GradientBoostingClassifier(n_estimators=100, random_state=42)
+    xgclf2.fit(X_train, Y_train)
+    Y_pred = xgclf2.predict(X_test)
+    accuracy_XG2 = accuracy_score(Y_test, Y_pred)
+    all_accuracies.append(accuracy_XG2)
+    print("Accuracy (XGBoost no CV):", accuracy_XG2)
 
-    #TODO: Try using this XGBoost instead?
-
-    # Train a model using the scikit-learn API
-    #xgb_classifier = GradientBoostingClassifier(n_estimators=100, objective='binary:logistic', tree_method='hist', eta=0.1, max_depth=3, enable_categorical=True)
-    #xgb_classifier.fit(X_train, Y_train)
-
-    # Convert the model to a native API model
-    #model = xgb_classifier.get_booster()
-    '''
     #-------------------------Implementing Logistic Regression--------------------------------------
-    print("In Log Reg")
-    loo = LeaveOneOut()
-    accuracies_rf = []
+    # Logistic Regression with 10-fold CV
+    cv = KFold(n_splits=10, random_state=1, shuffle=True)
+    accuracies_lr = []
 
-    #Random Forest Leave One Out
-    for train_index, test_index in loo.split(X):
+    for train_index, test_index in cv.split(X):
         X_train, X_test = X[train_index], X[test_index]
         Y_train, Y_test = Y[train_index], Y[test_index]
 
-        clf = LogisticRegression(random_state=0, max_iter = 150)
-        clf.fit(X_train, Y_train)
-        Y_pred = clf.predict(X_test)
+        lrclf = LogisticRegression(random_state=0, max_iter=100)
+        lrclf.fit(X_train, Y_train)
+        Y_pred = lrclf.predict(X_test)
         accuracy = accuracy_score(Y_test, Y_pred)
-        accuracies_rf.append(accuracy)
+        accuracies_lr.append(accuracy)
 
-    mean_accuracy_RF_LOO = np.mean(accuracies_rf)
-    all_accuracies.append(mean_accuracy_RF_LOO)
-    print("Mean Accuracy (LR): ", mean_accuracy_RF_LOO)
+    mean_accuracy_LR_10_Fold = np.mean(accuracies_lr)
+    all_accuracies.append(mean_accuracy_LR_10_Fold)
+    print("Mean Accuracy (Logistic Regression): ", mean_accuracy_LR_10_Fold)
 
-    # Random Forest without leave one out
+    # Logistic Regression without leave one out
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
-    clf = LogisticRegression(random_state=0, max_iter = 150) #TODO: Change random_state?
-    clf.fit(X_train, Y_train)
-    Y_pred = clf.predict(X_test)
-    accuracy_RF = accuracy_score(Y_test, Y_pred)
-    all_accuracies.append(accuracy_RF)
-    print("Accuracy (LR no LOO):", accuracy_RF)
+    lrclf2 = LogisticRegression(random_state=0, max_iter=100)
+    lrclf2.fit(X_train, Y_train)
+    Y_pred = lrclf2.predict(X_test)
+    accuracy_LR = accuracy_score(Y_test, Y_pred)
+    all_accuracies.append(accuracy_LR)
+    print("Accuracy (LR no CV):", accuracy_LR)
 
     return all_accuracies
 
 def plot_accuracies(all_accuracies):
     #-------------------------Plotting accuracies---------------------------------------------------
+    FONT_SIZE = 21
+    plt.rc('font', size=FONT_SIZE)  # controls default text sizes
+
     # Plotting accuracies
-    methods = ['SVM', 'SVM (w/o CV)', 'Random Forest', 'Random Forest (w/o CV)', 'Logistic Regression', 'Logistic Regression (w/o CV)']
+    methods = ['SVM', 'SVM (w/o CV)', 'RF', 'RF (w/o CV)', 'XGBoost', 'XGBoost (w/o CV)', 'LR', 'LR (w/o CV)']
     plt.figure(figsize=(30, 10))
-    bars = plt.bar(methods, all_accuracies, color=['blue', 'orange', 'yellow', 'pink', 'purple', 'green'])
-    plt.title('Accuracy Comparison All Audio Features')
+    bars = plt.bar(methods, all_accuracies, color=['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'])
+    plt.title('Accuracy Comparison Between Models')
     plt.xlabel('Method')
     plt.ylabel('Accuracy')
     plt.ylim(0, 1)
     for bar, accuracy in zip(bars, all_accuracies):
         plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f'{accuracy:.2f}', ha='center', va='bottom')
     plt.savefig('images/All_Audio_Features_SVM_RF_XGB_LR_Graph.png')
-    plt.show()
 
 if __name__=="__main__":
     main()

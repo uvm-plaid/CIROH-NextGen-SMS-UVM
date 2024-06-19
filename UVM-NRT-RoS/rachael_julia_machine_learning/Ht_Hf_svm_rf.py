@@ -10,6 +10,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import LeaveOneOut, train_test_split
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 import statsmodels.api as sm
 import maad
@@ -234,6 +235,35 @@ accuracy_RF = accuracy_score(Y_test, Y_pred)
 all_accuracies.append(accuracy_RF)
 print("Accuracy (RF no LOO):", accuracy_RF)
 '''
+
+
+#-------------------------Implementing Logistic Regression--------------------------------------
+print("In Log Reg")
+loo = LeaveOneOut()
+accuracies_lr = []
+
+#Logistic Regression Leave One Out
+for train_index, test_index in loo.split(X):
+    X_train, X_test = X[train_index], X[test_index]
+    Y_train, Y_test = Y[train_index], Y[test_index]
+    lrclf = LogisticRegression(random_state=0, max_iter=100)
+    lrclf.fit(X_train, Y_train)
+    Y_pred = lrclf.predict(X_test)
+    accuracy = accuracy_score(Y_test, Y_pred)
+    accuracies_lr.append(accuracy)
+
+mean_accuracy_LR_LOO = np.mean(accuracies_lr)
+all_accuracies.append(mean_accuracy_LR_LOO)
+print("Mean Accuracy (LR): ", mean_accuracy_LR_LOO)
+
+# Logistic Regression without leave one out
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
+lrclf2 = LogisticRegression(random_state=0, max_iter=100) #TODO: Change random_state?
+lrclf2.fit(X_train, Y_train)
+Y_pred = lrclf2.predict(X_test)
+accuracy_LR = accuracy_score(Y_test, Y_pred)
+all_accuracies.append(accuracy_LR)
+print("Accuracy (LR no LOO):", accuracy_LR)
 #-------------------------Plotting accuracies---------------------------------------------------
 # Plotting accuracies
 methods = ['SVM', 'SVM (w/o CV)', 'Random Forest', 'Random Forest (w/o CV)', 'XGBoost', 'XGBoost (w/o CV)']
