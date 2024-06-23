@@ -11,17 +11,19 @@
 
 #include "checksum.h"
 
-uint8_t nmeaChecksum(const char *sz, size_t len) {
-    size_t i = 0;
-    uint8_t cs;
+namespace checksum {
+    uint8_t nmeaChecksum(const char *sz, size_t len) {
+        size_t i = 0;
+        uint8_t cs;
 
-    if (sz [0] == '$'){
-        i++;
+        if (sz [0] == '$'){
+            i++;
+        }
+
+        for (cs = 0; (i < len) && sz [i]; i++){
+            cs ^= ((uint8_t) sz [i]);
+        }
+
+        return cs;
     }
-
-    for (cs = 0; (i < len) && sz [i]; i++){
-        cs ^= ((uint8_t) sz [i]);
-    }
-
-    return cs;
 }

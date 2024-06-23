@@ -9,10 +9,14 @@
  * Author: Lars Jensen, Jordan Bourdeau
 */
 
+#include <cstring>
 #include <SPI.h>
+#include <stdint.h>
+#include <time.h>
 #include <WiFi.h>
 
 #include "credentials.h" 
+#include "packets.h"
 #include "printing.h"
 #include "swarm.h"
 
@@ -23,6 +27,8 @@ int port = 23;
 int status = WL_IDLE_STATUS;
 
 void setup() {
+  // Register handlers
+  packets::registerReceiveNodePacketHandler(swarm::routePacketToSwarm);
 
   // Initialize serial and wait for port to open:
   Serial.begin(9600);
@@ -40,10 +46,10 @@ void setup() {
   // Attempt to connect to WiFi network:
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(SWARM_SSID);
+    Serial.println(credentials::SWARM_SSID);
 
     // Connect to WPA/WPA2 network:
-    status = WiFi.begin(SWARM_SSID, SWARM_PASSWORD);
+    status = WiFi.begin(credentials::SWARM_SSID, credentials::SWARM_PASSWORD);
 
     // wait 10 seconds for connection:
     delay(10000);
@@ -51,8 +57,8 @@ void setup() {
 
   // You're connected now, so print out the data:
   Serial.print("You're connected to the network");
-  printCurrentNet();
-  printWifiData();
+  printing::printCurrentNet();
+  printing::printWifiData();
 
   // Now we'll try and open a connection to the Access Point on the wifi to the swarm
   Serial.println("\nStarting Access Point Connection...");
@@ -68,21 +74,34 @@ void setup() {
 }
 
 void loop() {
-  Command command = {
-    "TD \"Hello World!\"", // Command
-    17, // Length
-  };
-
   // Read in commands from serial to either read data coming in or send out message
   if(Serial.available()){                
     switch(Serial.read()){
-      case 's':
-        sendCommand(client, command);
-        Serial.println("Hello World Message Sent");
-        break; 
-      case 'r':
-        readContinuously(client);
+      // Test as if a packet was just received
+      case 't': {
+        Serial.print('t');
+        char packetData[128]; // Overallocate just so there is no issue
+        sprintf(packetData, "\"name\":\"Test\",\"timestamp\":%d", (int) time(NULL));
+        size_t packetLength = strlen(packetData);
+
+        Serial.print("Sending Packet of Size ");
+        Serial.print(packetLength);
+        Serial.println(" Bytes:");
+        Serial.println(packetData);
+
+        packets::NodePacket packet = {
+          packetData,
+          packetLength,
+        };
+
+        packets::callReceiveNodePacketHandler(client, packet);
+        break;
+      }
+      case 'r': {
+        Serial.print('r');
+        swarm::readContinuously(client);
         break;  
+      }
     }
   }
 
@@ -95,5 +114,4 @@ void loop() {
     // Do nothing forevermore:
     while (true);
   }
-
 }

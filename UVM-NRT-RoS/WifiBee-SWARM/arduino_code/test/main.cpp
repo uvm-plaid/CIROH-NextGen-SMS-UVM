@@ -16,7 +16,7 @@
 void test_nmea_checksum(void) {
     char testString[] = "TD \"Hello World!\"";
     size_t length = 17;
-    uint8_t checksum = nmeaChecksum(testString, length);
+    uint8_t checksum = checksum::nmeaChecksum(testString, length);
 
     uint8_t expectedChecksum = 0x31;
     TEST_ASSERT_EQUAL(expectedChecksum, checksum);
