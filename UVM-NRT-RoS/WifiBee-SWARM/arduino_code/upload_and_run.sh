@@ -12,7 +12,7 @@ else
 fi
 
 # Build
-if pio run ; then
+if pio run -e giga; then
     # Upload to device and run
     arduino-cli upload -b arduino:mbed_giga:giga -p $device_port -i .pio/build/giga/firmware.bin 
     pio device monitor -p $device_port
