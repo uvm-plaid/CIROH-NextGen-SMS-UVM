@@ -14,7 +14,9 @@ Author: Jordan Bourdeau
 
 The Giga is not natively supported by Platform IO currently, so some additional
 setup needed to be done beyond just picking the board with Platform IO. [This](https://github.com/Haschtl/pio-arduinogiga) GitHub repo was used as a base to port this existing Arduino code to work with Platform IO.
-Follow the instructions in the README (editing platform.py file, and using arduino-cli to upload .bin file created by Platform IO). 
+Follow the instructions in the README (editing platform.py file, and using arduino-cli to upload .bin file created by Platform IO).
+
+NOTE: You WILL need to update the following commands to use the correct device for your machine. This also changes over time for a given machine. On Unix-based systems `ls /dev/` will provide a list of all devices, and you should be able to find something that looks like `cu.usbmodem*`. That will be the device whose path you provide.
 
 NOTE: I had to use `arduino-cli upload -b arduino:mbed_giga:giga -p /dev/cu.usbmodem1301 -i .pio/build/giga/firmware.bin` instead of just `arduino-cli upload -b arduino:mbed_giga:giga -i .pio/build/giga/firmware.bin` during setup process.
 
