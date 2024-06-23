@@ -4,11 +4,13 @@ Instructions on setting up the Giga with Platform IO and the Swarm M138 modem.
 Instructions developed on a 2022 Macbook Air. Your mileage may vary depending
 on system being used to set it up.
 
-Author: Jordan Bourdeau
-
 | Revision | Date       | Author          |
 |----------|------------|-----------------|
 |    1     |   6/16/24  | Jordan Bourdeau |
+
+## Links
+
+* [Home](../README.md)
 
 ## Platform IO Configuration
 

@@ -1,3 +1,14 @@
+# Manual Notes
+
+| Revision | Date       | Author          |
+|----------|------------|-----------------|
+|    1     |   6/16/24  | Jordan Bourdeau |
+
+## Links
+
+* [Home](../README.md)
+* [API Notes](api_notes.md)
+
 Questions:
 * What is wifi shielding?
 
