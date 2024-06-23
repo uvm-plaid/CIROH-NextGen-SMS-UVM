@@ -28,7 +28,7 @@ void printWifiData();
 
 /**
  * Function printing the following:
- *  - SSID of the currently connected network
+ *  - SWARM_SSID of the currently connected network
  *  - MAC address of currently connected router
  *  - Perceived signal strength
  *  - Encryption type

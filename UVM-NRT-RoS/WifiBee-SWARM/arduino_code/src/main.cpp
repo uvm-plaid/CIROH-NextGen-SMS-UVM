@@ -41,10 +41,10 @@ void setup() {
   // Attempt to connect to WiFi network:
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(SSID);
+    Serial.println(SWARM_SSID);
 
     // Connect to WPA/WPA2 network:
-    status = WiFi.begin(SSID, PASSWORD);
+    status = WiFi.begin(SWARM_SSID, SWARM_PASSWORD);
 
     // wait 10 seconds for connection:
     delay(10000);

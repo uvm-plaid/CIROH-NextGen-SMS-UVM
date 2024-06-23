@@ -9,7 +9,7 @@
 #ifndef CREDENTIALS_H
 #define CREDENTIALS_H
 
-#define SSID "swarm-1dac"
-#define PASSWORD "12345678"
+#define SWARM_SSID "swarm-1dac"
+#define SWARM_PASSWORD "12345678"
 
 #endif /* CREDENTIALS_H */
