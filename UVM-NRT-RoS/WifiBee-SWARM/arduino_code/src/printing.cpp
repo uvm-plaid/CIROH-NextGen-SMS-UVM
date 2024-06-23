@@ -21,52 +21,55 @@
 #include <SPI.h>
 #include <WiFi.h>
 
-void printMacAddress(uint8_t mac[]) {
-    for (int i = 5; i >= 0; i--) {
-        if (mac[i] < 16) {
-            Serial.print("0");
+namespace printing {
+
+    void printMacAddress(uint8_t mac[]) {
+        for (int i = 5; i >= 0; i--) {
+            if (mac[i] < 16) {
+                Serial.print("0");
+            }
+            Serial.print(mac[i], HEX);
+            if (i > 0) {
+                Serial.print(":");
+            }
         }
-        Serial.print(mac[i], HEX);
-        if (i > 0) {
-            Serial.print(":");
-        }
+        Serial.println();
     }
-    Serial.println();
-}
 
-void printWifiData() {
-    // Print your board's IP address:
-    IPAddress ip = WiFi.localIP();
-    Serial.print("IP Address: ");
-    Serial.println(ip);
-    Serial.println(ip);
+    void printWifiData() {
+        // Print your board's IP address:
+        IPAddress ip = WiFi.localIP();
+        Serial.print("IP Address: ");
+        Serial.println(ip);
+        Serial.println(ip);
 
-    // Print your MAC address:
-    byte mac[6];
-    WiFi.macAddress(mac);
-    Serial.print("MAC address: ");
-    printMacAddress(mac);
-}
+        // Print your MAC address:
+        byte mac[6];
+        WiFi.macAddress(mac);
+        Serial.print("MAC address: ");
+        printMacAddress(mac);
+    }
 
-void printCurrentNet() {
-    // Print the SSID of the network you're attached to:
-    Serial.print("SSID: ");
-    Serial.println(WiFi.SSID());
+    void printCurrentNet() {
+        // Print the SSID of the network you're attached to:
+        Serial.print("SSID: ");
+        Serial.println(WiFi.SSID());
 
-    // Print the MAC address of the router you're attached to:
-    byte bssid[6];
-    WiFi.BSSID(bssid);
-    Serial.print("BSSID: ");
-    printMacAddress(bssid);
+        // Print the MAC address of the router you're attached to:
+        byte bssid[6];
+        WiFi.BSSID(bssid);
+        Serial.print("BSSID: ");
+        printMacAddress(bssid);
 
-    // Print the received signal strength:
-    long rssi = WiFi.RSSI();
-    Serial.print("signal strength (RSSI):");
-    Serial.println(rssi);
+        // Print the received signal strength:
+        long rssi = WiFi.RSSI();
+        Serial.print("signal strength (RSSI):");
+        Serial.println(rssi);
 
-    // Print the encryption type:
-    byte encryption = WiFi.encryptionType();
-    Serial.print("Encryption Type:");
-    Serial.println(encryption, HEX);
-    Serial.println();
+        // Print the encryption type:
+        byte encryption = WiFi.encryptionType();
+        Serial.print("Encryption Type:");
+        Serial.println(encryption, HEX);
+        Serial.println();
+    }
 }
