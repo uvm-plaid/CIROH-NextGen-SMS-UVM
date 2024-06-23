@@ -1,5 +1,5 @@
 /**
- * modem.h
+ * swarm.h
  * 
  * Header file containing functions for interacting with the modem device.
  * 
@@ -9,15 +9,56 @@
  * Date Created: 6/16/24 
 */
 
-#ifndef MODEM_H
-#define MODEM_H
+#ifndef SWARM_H
+#define SWARM_H
 
 #include <stdint.h>
 #include <WiFi.h>
 
 #define MAX_MESSAGE_LENGTH 80
+#define CHECKSUM_LENGTH 3
 
-void flushRssi(WiFiClient client);
+
+struct Command {
+    char *command;
+    uint32_t length;
+};
+
+struct CommandResponse {
+
+};
+
+enum SwarmError {
+    CMD_BADPARAM,
+    CMD_BADPARAMLENGTH,
+    CMD_BADPARAMVALUE,
+    CMD_INVALIDCHAR,
+    CMD_NOTIMPLEMENTED,
+    CMD_PARAMMISSING,
+    CMD_PARAMDUPLICATE,
+};
+
+/**
+ * Function responsible for sending a SWARM command.
+ * 
+ * @param client (WiFiClient): SWARM WiFi client device connection.
+ * @param command (Command): Object containing relevant information
+ *  to issue a command to the SWARM device. Should NOT include the 
+ *  leading '$' or trailing checksum.
+ * 
+ * @returns TODO: Parse return.
+*/
+void sendCommand(WiFiClient client, Command command);
+
+/**
+ * Function which sends a string to the client until it encounters
+ * a null-terminating character.
+ * 
+ * @param client (WiFiClient): SWARM WiFi client device connection.
+ * @param data (char *): Data to send. Does not need to be null-terminated.
+ * @param length (uint32_t): Number of bytes to send.
+*/
+void sendString(WiFiClient client, char *data, uint32_t length);
 
 /**
  * Function to read all data from the client (SWARM access point)
@@ -45,14 +86,4 @@ void readContinuously(WiFiClient client);
 */
 char *readData(WiFiClient client);
 
-/**
- * Function which calculates the checksum to append at the end of outgoing messages.
- * 
- * @param message (const char *): Zero-terminated message string.
- * @param length (size_t): Length of the message being sent.
- * 
- * @returns (uint8_t): 8-bit checksum value to append to the end of the message.
-*/
-uint8_t nmeaChecksum(const char *message, size_t length);
-
-#endif /* MODEM_H */
+#endif /* SWARM_H */

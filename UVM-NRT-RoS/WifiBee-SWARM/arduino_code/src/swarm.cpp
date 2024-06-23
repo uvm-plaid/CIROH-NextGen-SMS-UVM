@@ -7,23 +7,43 @@
  * Date Created: 6/23/24
 */
 
-#include "modem.h"
+#include "checksum.h"
+#include "swarm.h"
 
 #include <SPI.h>
 #include <WiFi.h>
 
-void flushRssi(WiFiClient client) {
-    Serial.println("Flushing RSSI messages.");
-    char cmd[9] = "$RT 0*16";
+void sendCommand(WiFiClient client, Command command) {
+    uint8_t checksum = nmeaChecksum(command.command, command.length);
+    char checksum_buffer[CHECKSUM_LENGTH];
+    sprintf(checksum_buffer, "*%02x", checksum);
 
     client.flush();
+    sendString(client, "$", 1);
+    sendString(client, command.command, command.length);
+    sendString(client, checksum_buffer, CHECKSUM_LENGTH);
+
+    // Logging
+    Serial.print("Sending command: ");
+    Serial.print('$');
+    Serial.print(command.command);
+    Serial.print(checksum_buffer);
+    Serial.println();
+
+    // Try to read response
+    char *response = readData(client);
+    Serial.print("Response: ");
+    Serial.println(response);
+}
+
+void sendString(WiFiClient client, char *data, uint32_t length) {
     int index = 0;
-    while (cmd[index]) {
-        client.print(cmd[index++]);
+    while (index < length) {
+        client.print(data[index++]);
     }
 }
 
-char* readData(WiFiClient client) {
+char *readData(WiFiClient client) {
     static char message[MAX_MESSAGE_LENGTH];
     int index = 0; 
 
@@ -44,7 +64,6 @@ char* readData(WiFiClient client) {
         message[index] = '\0';
     }
 
-    Serial.println(message);
     return message;
 }
 
@@ -56,20 +75,4 @@ void readContinuously(WiFiClient client){
         }
         Serial.print(c);
     }
-}
-
-
-uint8_t nmeaChecksum (const char *sz, size_t len) {
-    size_t i = 0;
-    uint8_t cs;
-
-    if (sz [0] == '$'){
-        i++;
-    }
-
-    for (cs = 0; (i < len) && sz [i]; i++){
-        cs ^= ((uint8_t) sz [i]);
-    }
-
-    return cs;
 }

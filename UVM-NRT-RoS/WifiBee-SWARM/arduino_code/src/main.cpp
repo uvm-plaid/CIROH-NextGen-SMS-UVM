@@ -14,8 +14,7 @@
 
 #include "credentials.h" 
 #include "printing.h"
-#include "modem.h"
-
+#include "swarm.h"
 
 // To connect to the Access Point on the SWARM (how you actually upload the data)
 WiFiClient client;
@@ -57,9 +56,11 @@ void setup() {
 
   // Now we'll try and open a connection to the Access Point on the wifi to the swarm
   Serial.println("\nStarting Access Point Connection...");
-  if (client.connect(server, port)) {
-    Serial.println("connected");
+  while (!client.connect(server, port)) {
+    Serial.println("Trying to connect");
+    delay(3000);
   }
+  Serial.println("Connected!");
 
   // TODO: need to read data until we get "$M138 DATETIME*56" message, once we do we can transmit data
   // TODO: send "$TD ..." message with our data
@@ -67,29 +68,21 @@ void setup() {
 }
 
 void loop() {
-
-  int index = 0;
-  char helloWorld[22] = "$TD \"Hello World!\"*31";
+  Command command = {
+    "TD \"Hello World!\"", // Command
+    17, // Length
+  };
 
   // Read in commands from serial to either read data coming in or send out message
   if(Serial.available()){                
     switch(Serial.read()){
       case 's':
-        Serial.println("Sending Hello World");
-        client.flush();
-        while (helloWorld[index]) {
-          client.print(helloWorld[index]);
-          index++;
-        }
+        sendCommand(client, command);
         Serial.println("Hello World Message Sent");
-        index = 0;
         break; 
-      case 'f':
-        flushRssi(client);
-        break;
       case 'r':
         readContinuously(client);
-        break;   
+        break;  
     }
   }
 
