@@ -12,16 +12,54 @@
  *  Modified 31 May 2012 by Tom Igoe
  *  Modified 22 March 2023 by Karl Söderby
  * 
- * Author: Lars Jensen
+ * Authors: Lars Jensen, Jordan Bourdeau
  * Date Created: 6/23/24
 */
 
 #include "printing.h"
 
 #include <SPI.h>
+#include <stdarg.h>
 #include <WiFi.h>
 
 namespace printing {
+
+    // Max buffer length
+    static char PRINT_BUFFER[BUFFER_LENGTH];
+
+    #define TRY_BUFFER_WRITE(buffer, buffer_length, format, args) {\
+        if (vsnprintf(buffer, buffer_length - 1, format, args) > BUFFER_LENGTH) {\
+            Serial.print("String too larger for buffer size.");\
+            return;\
+        }\
+    }\
+
+    // Print using a pretty large fixed size buffer
+    // No handling for anything beyond buffer size currently other than
+    // throwing up our hands and not printing.
+    void dbg(const char *format, ...) { 
+        if (DEBUG_PRINT) {
+            va_list args;
+            va_start(args, format);
+
+            TRY_BUFFER_WRITE(PRINT_BUFFER, BUFFER_LENGTH, format, args);
+            Serial.print(PRINT_BUFFER);
+
+            va_end(args);
+        }
+    }
+
+    void dbgln(const char *format, ...) { 
+        if (DEBUG_PRINT) {
+            va_list args;
+            va_start(args, format);
+
+            TRY_BUFFER_WRITE(PRINT_BUFFER, BUFFER_LENGTH, format, args);
+            Serial.println(PRINT_BUFFER);
+
+            va_end(args);
+        }
+    }
 
     void printMacAddress(uint8_t mac[]) {
         for (int i = 5; i >= 0; i--) {
