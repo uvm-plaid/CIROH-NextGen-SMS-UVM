@@ -17,16 +17,28 @@
 
 namespace swarm {
 
-    Command::Command(const char code[COMMAND_CODE_LENGTH + 1], packets::NodePacket &packet) {
+    #define CHECK_VALID_COMMAND(code, data) {\
+        size_t length;\
+        if ((length = strlen(code)) > COMMAND_CODE_LENGTH) {\
+            printing::dbgln("Command code was %d characters long but can only be %d characters.", length, MAX_NODE_PACKET_SIZE_BYTES);\
+            return;\
+        }\
+        if ((length = strlen((char *) data)) > MAX_NODE_PACKET_SIZE_BYTES) {\
+            printing::dbgln("Data was %d characters long but can only be %d characters.", length, MAX_NODE_PACKET_SIZE_BYTES);\
+            return;\
+        }\
+    }\
+
+    Command::Command(const char code[COMMAND_CODE_LENGTH + 1], packets::NodePacket packet) {
+        CHECK_VALID_COMMAND(code, packet.data);
+
         // Write command code to buffer
         data[0] = code[0];
         data[1] = code[1];
         data[2] = ' ';
 
-        // Write packet data to buffer
-        for (size_t i = 0; i < packet.length; ++i) {
-            data[i + 3] = packet.data[i];
-        }
+        // Write packet data to buffer (+1 for null byte)
+        strncpy((char *) data + 3, (char *) packet.data, packet.length + 1);
 
         // Compute checksum and write it (plus null-terminating character) to data buffer
         length = COMMAND_CODE_LENGTH + 1 + packet.length;
@@ -35,6 +47,17 @@ namespace swarm {
 
         // Update length (length is length of legitimate bytes, and does not include null character).
         length += CHECKSUM_LENGTH;
+
+        data[length] = '\0';
+        length += 1;
+    }
+
+    Command::Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data) 
+        : Command(code, packets::NodePacket(data)) {}
+
+    void Command::print() {
+        printing::dbgln("Length: %d bytes", length);
+        printing::dbgln("Data: %s", data);
     }
 
     Device::Device() : status(WL_IDLE_STATUS) {}
@@ -94,6 +117,9 @@ namespace swarm {
 
         printing::dbgln("Connected!");
 
+        // Wait for the "$M138 DATETIME*56" message
+        readContinuously();
+
         return true;
     }
 
@@ -112,13 +138,23 @@ namespace swarm {
         sendCommand(Command("TD", packet));
     }
 
-    void Device::sendCommand(Command command) {
+
+    char *Device::sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse) {
+        return sendCommand(Command(code, data), awaitResponse);
+    }
+
+    char *Device::sendCommand(Command command, bool awaitResponse) {
         printing::dbgln("Sending command: $%s", (char *) command.data);
 
         client.flush();
         client.print('$');
         sendData(command.data, command.length);
         printing::dbgln("Command sent!");
+
+        // TODO: Remove
+        delay(2000);
+
+        return awaitResponse ? readData() : nullptr;
     }
 
     void Device::sendData(uint8_t data[], size_t length) {
@@ -128,8 +164,8 @@ namespace swarm {
         }
     }
 
-    uint8_t* Device::readData() {
-        static uint8_t message[MAX_NODE_PACKET_SIZE_BYTES + 1];
+    char* Device::readData() {
+        static char message[MAX_NODE_PACKET_SIZE_BYTES + 1];
         int index = 0; 
 
         if (client.available()) {
@@ -140,7 +176,7 @@ namespace swarm {
             }
 
             // Read the incoming message into the message array
-            while (c != '$' && index < MAX_NODE_PACKET_SIZE_BYTES) { 
+            while (c != '$' && index < 79) { 
                 message[index++] = c; 
                 c = client.read(); 
             }

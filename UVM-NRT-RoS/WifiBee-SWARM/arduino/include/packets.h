@@ -42,9 +42,17 @@ namespace packets {
         NodePacket();
 
         /**
-         * Constructor which takes arguments.
+         * Constructor which creates a packet from arguments.
+         * @param str (const char *): Byte array for the packet data.
+         * @param len (size_t): Number of bytes in the array.
         */
-        NodePacket(uint8_t data[], size_t length);
+        NodePacket(const char *str, size_t len);
+
+        /**
+         * Convenience constructor.
+         * @param str (const char *): C-string containing data.
+        */
+        NodePacket(const char *str);
 
         /**
          * Print node packet fields.
