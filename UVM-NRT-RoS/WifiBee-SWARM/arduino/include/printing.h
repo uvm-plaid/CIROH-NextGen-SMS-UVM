@@ -15,9 +15,27 @@
 #include <stdint.h>
 
 namespace printing {
+
+    #define DEBUG_PRINT true
+    #define BUFFER_LENGTH 4096
+
+    /**
+     * Debugging print. 
+     * @param message (const char *): C-style format string.
+     * @param ... (va_list): Arguments for format specifiers in format string. 
+    */
+    void dbg(const char *format, ...);
+
+    /**
+     * Debugging print statement that appends a newline character
+     * at the end of the message.
+     * @param message (const char *): C-style format string.
+     * @param ... (va_list): Arguments for format specifiers in format string. 
+    */
+    void dbgln(const char *format, ...);
+
     /**
      * Function which prints the mac address of a device.
-     * 
      * @param mac (uint8_t array): Array of bytes for the MAC address.
     */
     void printMacAddress(uint8_t mac[]);
