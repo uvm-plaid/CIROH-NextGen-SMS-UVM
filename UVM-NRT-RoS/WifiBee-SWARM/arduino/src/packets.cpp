@@ -18,15 +18,15 @@ namespace packets {
     // Handler functions are null pointers by default
     PacketHandler RECEIVE_NODE_PACKET = nullptr;
 
-    NodePacket::NodePacket(uint8_t data[], size_t length) {
-        length = length;
-        data = data;
+    NodePacket::NodePacket() {}
+
+    NodePacket::NodePacket(const char *str, size_t len) {
+        strncpy((char *) data, str, len + 1); // + 1 for null byte
+        length = len;
     }
 
-    NodePacket::NodePacket() {
-        length = 0;
-        data[MAX_NODE_PACKET_SIZE_BYTES] = 0;
-    }
+    NodePacket::NodePacket(const char *str) 
+        : NodePacket(str, strlen(str)) {}
 
     void NodePacket::print() {
         printing::dbgln("Packet Length: %d Bytes", length);
@@ -46,24 +46,10 @@ namespace packets {
         return packet;
     }
 
-
     DeserializationError getPacketData(NodePacket &packet, JsonDocument &doc) {
         doc.clear();
         return deserializeJson(doc, packet.data, packet.length);
     }
-
-    // JsonDocument getPacketData(NodePacket packet) {
-    //     JsonDocument doc;
-    //     DeserializationError error;
-
-    //     // if ((error = deserializeJson(doc, packet.data, packet.length))) {
-    //     //     printing::dbgln(error.c_str());
-    //     // }
-
-    //     doc["name"] = "Inner function";
-
-    //     return doc;
-    // }
 
     void receivePacket(NodePacket packet) {
         if (RECEIVE_NODE_PACKET != nullptr) {

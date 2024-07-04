@@ -35,11 +35,23 @@ namespace swarm {
          * Automatically computes length and checksum value.
          * `data` field will contain value to send to the Swarm device.
          * 
-         * @param code (const char [COMMAND_LENGTH + 1]): 2 character command code with null-termination.
+         * @param code (const char [COMMAND_CODE_LENGTH + 1]): 2 character command code with null-termination.
          *  for the command length.
-         * @param packet (NodePacket &packet): Packet containing data used in command.
+         * @param packet (NodePacket packet): Packet containing data used in command.
         */
-       Command(const char code[COMMAND_CODE_LENGTH + 1], packets::NodePacket &packet);
+        Command(const char code[COMMAND_CODE_LENGTH + 1], packets::NodePacket packet);
+
+        /**
+         * Convenience constructor which wraps the one taking a node packet.
+         * @param code (const char [COMMAND_CODE_LENGTH + 1]): 2 character command code with null-termination.
+         * @param data (const char *): Null terminated string for the command argument.
+        */
+        Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data);
+
+        /**
+        * Debugging method to see what is in a command.
+        */
+        void print();
     };
 
     // TODO: Create this
@@ -110,14 +122,22 @@ namespace swarm {
         void receivePacket(packets::NodePacket packet);
 
         /**
+         * Convenience function which abstracts the `Command` data structure
+         * and presents a string interface.
+         * @param command (const char [COMMAND_CODE_LENGTH + 1]): 2-character command code.
+         * @param data (const char *): Data to be sent in command.
+         * @param awaitResponse (bool): Whether to wait for a response from the modem.
+        */
+        char *sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true);
+
+        /**
          * Function responsible for sending a SWARM command.
          * @param command (Command): Object containing relevant information
          *  to issue a command to the SWARM device. Should NOT include the 
          *  leading '$' or trailing checksum.
-         * 
-         * @returns TODO: Parse return.
+         * @param awaitResponse (bool): Whether to wait for a response from the modem.
         */
-        void sendCommand(Command command);
+        char *sendCommand(Command command, bool awaitResponse = true);
 
         /**
          * Function which sends a string to the client until it encounters
@@ -141,7 +161,7 @@ namespace swarm {
          * @returns (char *): Pointer to static character array of up to MAX_MESSAGE_LENGTH.
          *  which exists within the readData function.
         */
-        uint8_t* readData();
+        char* readData();
 
         /**
          * Function to read all data from the Swarm and print it via Serial.

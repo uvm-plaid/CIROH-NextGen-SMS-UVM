@@ -23,8 +23,17 @@
 
 swarm::Device client;
 JsonDocument doc;
-JsonDocument doc2;
 packets::NodePacket packet;
+
+// Helper function for debugging if printing is having any issues
+void loopLeds() {
+    digitalWrite(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(1000);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(1000);
+}
 
 void setup() {
     // Register handlers
@@ -33,21 +42,41 @@ void setup() {
     // Wait for serial port to connect. Needed for native USB port only
     Serial.begin(9600);
     while (!Serial) {
-      ;
+        loopLeds();
     }
+
+    printing::dbgln("Serial port is connected!");
 
     // To connect to the Access Point on the SWARM (how you actually upload the data)
     IPAddress server(192, 168, 4, 1);
     int port = 23;
     client.connect(server, port);
 
+    // Read any buffer data
+    client.readData();
+
+    // Send startup commands
+    const char *commands[][2] = {
+        {"RT", "?"},
+        {"FV", ""},
+        {"MT", "C=U"}
+    };
+
+    // TODO: Send setup commands here- segfaulting currently
+    for (auto command: commands) {
+        char *response = client.sendCommand(swarm::Command(command[0], command[1]));
+        printing::dbgln("Response: %s", response);
+    }
+
+    // Setup JSON packet data to be sent in a loop
     doc["name"] = "Test";
     doc["temperature"] = 72.0;
 }
 
+// NOTE: Very first command after connecting can take a while
 void loop() {
 
-    // Keep sending packets to the client every minute
+    // Keep sending packets to the client
     packet = packets::makeNodePacket(doc);
     packets::receivePacket(packet);
     delay(5 * 1000);
