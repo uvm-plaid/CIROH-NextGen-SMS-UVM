@@ -1,0 +1,6 @@
+/* REXX */
+CALL ZocClearScreen
+
+Call ZocSend "$FV*10^M"
+
+EXIT

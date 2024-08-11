@@ -36,7 +36,7 @@ namespace printing {
 
     /**
      * Function which prints the mac address of a device.
-     * @param mac (uint8_t array): Array of bytes for the MAC address.
+     * @param mac (uint8_t []): Array of bytes for the MAC address.
     */
     void printMacAddress(uint8_t mac[]);
 

@@ -1,0 +1,7 @@
+/* REXX */
+CALL ZocClearScreen
+
+/* Display noise floor messages once a second */
+Call ZocSend "$RT 1*17^M"
+
+EXIT

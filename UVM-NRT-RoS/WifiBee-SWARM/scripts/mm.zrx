@@ -1,0 +1,32 @@
+/* REXX */
+/*
+$MM - Messages Received Management (2-way operation)
+Manage received messages in the device incoming message queue. Has ability to return the count, mark, and delete messages.
+$MM <C=<U|*>|D=<msgID|R|*>|L=<msgID|U>|M=<msgID|*>|N=<D|E|?>|R=<msgID|O|N>>*xx
+Parameter
+Description
+C=<U|*>
+Return count of unread (U) or all (*) messages
+D=<msgID|R|*>
+Delete message ID (msgID), all read (R), or all messages (*)
+L=<msgID|U>
+List message ID (msgID), or the 10 oldest received unread messages (U). Listing a message by msgID will mark it as read (R)
+M=<msgID|*>
+Mark message ID (msgID) or all messages (*) as read
+N=<D|E|?>
+Message notifications disabled (D), enabled (E), or query (?)
+R=<msgID|O|N>
+Read message ID (msgID), oldest (O), or newest (N) message
+*/
+CALL ZocClearScreen
+
+/* Count all unread messages */
+CALL ZocSend "$MM C=U*0b^M"
+
+/* Read newest received message (if there is one) */
+CALL ZocSend "$MM R=N*01^M"
+
+/* Query message notifications */
+CALL ZocSend "$MM N=?*6c^M"
+
+EXIT
