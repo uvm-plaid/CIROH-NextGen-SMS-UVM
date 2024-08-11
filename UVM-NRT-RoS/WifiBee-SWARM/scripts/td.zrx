@@ -1,0 +1,18 @@
+/* REXX */
+CALL ZocClearScreen
+
+/*
+Parameters:
+AI = Application ID message is setn with
+HD = Hold duration of message in seconds (default is 172,800, minimum is 60, max is 34819200)
+ET = Expiration time of the message in epoch seconds 
+<string|data> = 1 - 192 bytes of data (ASCII) or 2 - 384 hex bytes
+
+Note:
+TD command must occur after a "$M138 DATETIME*56" response following power up
+
+Doesn't get anything in response?
+*/
+CALL ZocSend "$TD 49206C6F766520537761726D*4c^M"
+
+EXIT

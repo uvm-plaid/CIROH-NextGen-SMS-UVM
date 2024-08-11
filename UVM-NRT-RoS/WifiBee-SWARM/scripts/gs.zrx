@@ -1,0 +1,10 @@
+/* REXX */
+CALL ZocClearScreen
+
+/* Get most recent GPS message */
+CALL ZocSend "$GS @*74^M"
+
+/* Set rate GPS fix quality messages are sent */
+CALL ZocSend "$GS 1*05^M"
+
+EXIT

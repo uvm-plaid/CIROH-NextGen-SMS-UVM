@@ -21,7 +21,7 @@ namespace packets {
     NodePacket::NodePacket() {}
 
     NodePacket::NodePacket(const char *str, size_t len) {
-        strncpy((char *) data, str, len + 1); // + 1 for null byte
+        strncpy(data, str, len + 1); // + 1 for null byte
         length = len;
     }
 
@@ -30,7 +30,7 @@ namespace packets {
 
     void NodePacket::print() {
         printing::dbgln("Packet Length: %d Bytes", length);
-        printing::dbgln("Data: %s", (char *) data);
+        printing::dbgln("Data: %s", data);
         printing::dbgln("CRC: 0x%02x", crc);
     }
 

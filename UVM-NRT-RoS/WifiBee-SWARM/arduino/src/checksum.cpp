@@ -14,7 +14,7 @@
 
 namespace checksum {
     
-    uint8_t nmeaChecksum(uint8_t data[], size_t len) {
+    uint8_t nmeaChecksum(char *data, size_t len) {
         size_t i = 0;
         uint8_t cs;
 

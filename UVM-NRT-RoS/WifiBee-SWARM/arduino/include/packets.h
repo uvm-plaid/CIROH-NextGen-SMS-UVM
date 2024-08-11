@@ -26,14 +26,14 @@ namespace packets {
      * @param length (uint8_t): Length of the actual relevant
      *  data section contained in the data array. Remainder
      *  should be skipped.
-     * @param data (uint8_t []): Array of bytes containing serialized
+     * @param data (char *): Array of bytes containing serialized
      *  JSON data. Maximum length is the maximum allowable packet
      *  size on the Swarm.
      * @param crc (uint16_t): Checksum to verify packet was received correctly.
     */
     struct NodePacket {
         uint8_t length;
-        uint8_t data[MAX_NODE_PACKET_SIZE_BYTES + 1];
+        char data[MAX_NODE_PACKET_SIZE_BYTES + 1];
         uint16_t crc;
 
         /**

@@ -24,11 +24,12 @@
 namespace swarm {
     #define COMMAND_CODE_LENGTH 2 // commands are 2 characters long
     #define CHECKSUM_LENGTH 3 // *XX
+    #define MAX_MESSAGE_LENGTH 79
     constexpr size_t MAX_COMMAND_LENGTH = MAX_NODE_PACKET_SIZE_BYTES + 1;
 
     struct Command {
         size_t length;
-        uint8_t data[MAX_COMMAND_LENGTH];
+        char data[MAX_COMMAND_LENGTH];
 
         /**
          * Constructor used to make a command object from a packet and command code.
@@ -54,11 +55,9 @@ namespace swarm {
         void print();
     };
 
-    // TODO: Create this
-    struct Response {
-    };
-
-    enum Error {
+    enum CommandStatus {
+        OKAY,
+        NONE,
         CMD_BADPARAM,
         CMD_BADPARAMLENGTH,
         CMD_BADPARAMVALUE,
@@ -68,14 +67,38 @@ namespace swarm {
         CMD_PARAMDUPLICATE,
     };
 
+    extern const char *STATUS_MESSAGES[];
+
+    struct CommandResponse {
+        char data[MAX_MESSAGE_LENGTH + 1];
+        CommandStatus status;
+
+        /**
+         * Default initializer.
+        */
+        CommandResponse();
+
+        /**
+         * Constructor which takes a string response and determines
+         * the command status.
+        */
+        CommandResponse(char response[MAX_MESSAGE_LENGTH + 1]);
+
+        /**
+         * @returns String status message for response status.
+        */
+        const char *statusMessage();
+    };
+
     /**
      * Struct providing the Swarm device interface.
      * @param client (WiFiClient): WiFi connection to Swarm device.
      * @param status (uint8_t): Current status of the client connection.
     */
     struct Device {
-        WiFiClient client;
-        uint8_t status;
+        public:
+            WiFiClient client;
+            uint8_t status;
 
         /**
          * Constructor for the Device struct.
@@ -85,7 +108,7 @@ namespace swarm {
         /**
          * Destructor for Device which disconnects from client.
         */
-       ~Device();
+        ~Device();
 
         /**
          * Getter for if the Swarm device is connected.
@@ -97,12 +120,15 @@ namespace swarm {
          * Function for connecting to the Swarm device.
          * @param server (IPAddress): IP address of WiFi client.
          * @param port (uint16_t): Port to connect to on WiFiClient.
-         * @param retries (uint8_t): Maximum number of retries when trying to begin the WiFi
-         *  network or connect to the Swarm device.
-         * @param connectDelay (float): Number of milliseconds to wait after connecting to
+         * @param connectDelay (uint32_t): Number of milliseconds to wait after connecting to
          *  WiFi network and between connection attempts to Swarm access point.
         */
-        bool connect(IPAddress server, uint16_t port, uint8_t retries = 3, float connectDelay = 3);
+        bool connect(IPAddress server, uint16_t port, uint32_t connectDelay = 500);
+        
+        /**
+         * Reconnect to the last used connection.
+         */
+        bool reconnect() { return true; }
 
         /**
          * Function for disconnecting from the Swarm device.
@@ -117,18 +143,21 @@ namespace swarm {
 
         /**
          * Handler function for the Swarm receiving a packet.
-         * @param (packets::NodePacket): Packet being received.
+         * @param packet (packets::NodePacket): Packet being received.
         */
         void receivePacket(packets::NodePacket packet);
 
         /**
          * Convenience function which abstracts the `Command` data structure
          * and presents a string interface.
+         * 
          * @param command (const char [COMMAND_CODE_LENGTH + 1]): 2-character command code.
          * @param data (const char *): Data to be sent in command.
          * @param awaitResponse (bool): Whether to wait for a response from the modem.
+         * 
+         * @returns (CommandResponse): Parsed response.
         */
-        char *sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true);
+        char* sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true);
 
         /**
          * Function responsible for sending a SWARM command.
@@ -136,38 +165,26 @@ namespace swarm {
          *  to issue a command to the SWARM device. Should NOT include the 
          *  leading '$' or trailing checksum.
          * @param awaitResponse (bool): Whether to wait for a response from the modem.
+         * 
+         * @returns (CommandResponse): Parsed response.
         */
-        char *sendCommand(Command command, bool awaitResponse = true);
-
-        /**
-         * Function which sends a string to the client until it encounters
-         * a null-terminating character.
-         * @param data (uint8_t []): Data to send. Does not need to be null-terminated.
-         * @param length (size_t): Number of bytes to send.
-        */
-        void sendData(uint8_t data[], size_t length);
+        char* sendCommand(Command command, bool awaitResponse = true);
 
         /**
          * Function to read a single message from the client.
          * Reads in data until it encounters a '$' character, then
          * continues reading until it encounters a newline or end of message.
          * 
-         * TODO: Finish this method. Read in one message at a time to check for:
-         * a) The "$M138 DATETIME*56" message meaning we can send data.
-         * b) The "$TD OK ..." message meaning our data has been accepted for sending
-         * c) Any "$TD SENT ..." messages confirming data had been successfully uploaded
-         *    to the satellite from the device.
-         * 
          * @returns (char *): Pointer to static character array of up to MAX_MESSAGE_LENGTH.
-         *  which exists within the readData function.
         */
-        char* readData();
+        char *readData();
 
         /**
-         * Function to read all data from the Swarm and print it via Serial.
+         * Function which blocks while reading data until a message is received.
+         * 
+         * @returns (char *): Pointer to static character array of up to MAX_MESSAGE_LENGTH.
         */
-        void readContinuously();
-
+        char *readDataBlocking();
     };
 }
 
