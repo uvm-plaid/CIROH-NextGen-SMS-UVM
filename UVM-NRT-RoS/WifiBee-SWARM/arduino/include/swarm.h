@@ -25,6 +25,7 @@ namespace swarm {
     #define COMMAND_CODE_LENGTH 2 // commands are 2 characters long
     #define CHECKSUM_LENGTH 3 // *XX
     #define MAX_MESSAGE_LENGTH 79
+    // + 1 for null byte
     constexpr size_t MAX_COMMAND_LENGTH = MAX_NODE_PACKET_SIZE_BYTES + 1;
 
     struct Command {
@@ -48,11 +49,6 @@ namespace swarm {
          * @param data (const char *): Null terminated string for the command argument.
         */
         Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data);
-
-        /**
-        * Debugging method to see what is in a command.
-        */
-        void print();
     };
 
     enum CommandStatus {
@@ -97,8 +93,11 @@ namespace swarm {
     */
     struct Device {
         public:
-            WiFiClient client;
-            uint8_t status;
+        WiFiClient client;
+        uint8_t status;
+        IPAddress server;
+        uint16_t port;
+        uint32_t connectDelay;
 
         /**
          * Constructor for the Device struct.
@@ -114,7 +113,13 @@ namespace swarm {
          * Getter for if the Swarm device is connected.
          * @returns Whether WiFi client is connected.
         */
-        bool isConnected();
+        bool connected() { return client.connected(); }
+
+        /**
+         * Getter for whether the client is available or not.
+         * @returns Number of bytes available to be read.
+         */
+        int available() { return client.available(); }
 
         /**
          * Function for connecting to the Swarm device.
@@ -128,7 +133,7 @@ namespace swarm {
         /**
          * Reconnect to the last used connection.
          */
-        bool reconnect() { return true; }
+        bool reconnect();
 
         /**
          * Function for disconnecting from the Swarm device.
@@ -157,7 +162,7 @@ namespace swarm {
          * 
          * @returns (CommandResponse): Parsed response.
         */
-        char* sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true);
+        CommandResponse sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true);
 
         /**
          * Function responsible for sending a SWARM command.
@@ -168,7 +173,7 @@ namespace swarm {
          * 
          * @returns (CommandResponse): Parsed response.
         */
-        char* sendCommand(Command command, bool awaitResponse = true);
+        CommandResponse sendCommand(Command command, bool awaitResponse = true);
 
         /**
          * Function to read a single message from the client.
@@ -177,14 +182,14 @@ namespace swarm {
          * 
          * @returns (char *): Pointer to static character array of up to MAX_MESSAGE_LENGTH.
         */
-        char *readData();
+        char *readMessage();
 
         /**
          * Function which blocks while reading data until a message is received.
          * 
          * @returns (char *): Pointer to static character array of up to MAX_MESSAGE_LENGTH.
         */
-        char *readDataBlocking();
+        char *readMessageBlocking();
     };
 }
 

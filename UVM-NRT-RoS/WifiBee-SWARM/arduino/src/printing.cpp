@@ -28,9 +28,12 @@ namespace printing {
     static char PRINT_BUFFER[BUFFER_LENGTH];
 
     #define TRY_BUFFER_WRITE(buffer, buffer_length, format, args) {\
-        if (vsnprintf(buffer, buffer_length - 1, format, args) > BUFFER_LENGTH) {\
+        size_t end = vsnprintf(buffer, buffer_length - 1, format, args);\
+        if (end > BUFFER_LENGTH) {\
             Serial.print("String too larger for buffer size.");\
             return;\
+        } else {\
+            buffer[end] = '\0';\
         }\
     }\
 
