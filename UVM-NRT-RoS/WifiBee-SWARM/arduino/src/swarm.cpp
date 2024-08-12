@@ -5,7 +5,7 @@
  * 
  * Authors: Lars Jensen, Jordan Bourdeau
  * Date Created: 6/23/24
-*/
+ */
 
 #include "checksum.h"
 #include "credentials.h"
@@ -29,12 +29,12 @@ namespace swarm {
     };
 
     Command::Command(const char code[COMMAND_CODE_LENGTH + 1], packets::NodePacket packet) {
-        size_t length;
-        if ((length = strlen(code)) > COMMAND_CODE_LENGTH) {
-            printing::dbgln("Command code was %d characters long but can only be %d characters.", length, MAX_NODE_PACKET_SIZE_BYTES);
+        size_t len;
+        if ((len = strlen(code)) > COMMAND_CODE_LENGTH) {
+            printing::dbgln("Command code was %d characters long but can only be %d characters.", len, MAX_NODE_PACKET_SIZE_BYTES);
             return;
-        } else if ((length = strlen(packet.data)) > MAX_NODE_PACKET_SIZE_BYTES) {
-            printing::dbgln("Data was %d characters long but can only be %d characters.", length, MAX_NODE_PACKET_SIZE_BYTES);
+        } else if ((len = strlen(packet.data)) > MAX_NODE_PACKET_SIZE_BYTES) {
+            printing::dbgln("Data was %d characters long but can only be %d characters.", len, MAX_NODE_PACKET_SIZE_BYTES);
             return;
         }
 
@@ -55,49 +55,35 @@ namespace swarm {
 
         // Update length (length is length of legitimate bytes, and does not include null character).
         length += CHECKSUM_LENGTH;
-
-        data[length++] = '\0';
+        data[length++] = '\0'; 
     }
 
     Command::Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data) 
         : Command(code, packets::NodePacket(data)) {}
 
-    void Command::print() {
-        printing::dbgln("Length: %d bytes", length);
-        printing::dbgln("Data: %s", data);
-    }
-
-    CommandResponse::CommandResponse() {}
+    CommandResponse::CommandResponse(): status(CommandStatus::NONE) {}
 
     CommandResponse::CommandResponse(char response[MAX_MESSAGE_LENGTH + 1]) {
+        constexpr char *error_str = "ERR,";
+        constexpr size_t error_str_len = 4;
+        if (data == nullptr) {
+            status = CommandStatus::NONE;
+            return;
+        }
         strncpy(data, response, MAX_MESSAGE_LENGTH + 1);
-        status = CommandStatus::NONE;
+        char *ret;
+        if ((ret = strstr(data, error_str)) == nullptr) {
+            status = CommandStatus::OKAY;
+            return;
+        }
 
-        // #define ERROR_STR "ERR,"
-        // #define ERROR_STR_LEN 4
-
-        // // Get our own copy of the data and keep track of length
-        // strncpy(data, response, MAX_MESSAGE_LENGTH + 1);
-
-        // // Check special exit conditions
-        // if (data == nullptr) {
-        //     status = CommandStatus::NONE;
-        //     return;
-        // } 
-        // char *ret;
-        // if ((ret = strstr(data, ERROR_STR)) == nullptr) {
-        //     status = CommandStatus::OKAY;
-        //     return;
-        // }
-
-        // // Compare error string against all potential candidates
-        // for (int index = CommandStatus::CMD_BADPARAM; index < CommandStatus::CMD_PARAMDUPLICATE; ++index) {
-        //     if (strstr(ret + ERROR_STR_LEN, STATUS_MESSAGES[index]) != nullptr) {
-        //         status = (CommandStatus) index;
-        //         printing::dbgln(statusMessage());
-        //         return;
-        //     }
-        // }
+        // Compare error string against all potential candidates
+        for (int index = CommandStatus::CMD_BADPARAM; index < CommandStatus::CMD_PARAMDUPLICATE; ++index) {
+            if (strstr(ret + error_str_len, STATUS_MESSAGES[index]) != nullptr) {
+                status = (CommandStatus) index;
+                return;
+            }
+        }
     }
 
     const char *CommandResponse::statusMessage() {
@@ -108,13 +94,18 @@ namespace swarm {
 
     Device::~Device() {
         disconnect(); 
-    }
-
-    bool Device::isConnected() {
-        return client.connected();
+        WiFi.end();
     }
 
     bool Device::connect(IPAddress server, uint16_t port, uint32_t connectDelay) {
+        if (client.connected()) {
+            return true;
+        }
+
+        this->server = server;
+        this->port = port;
+        this->connectDelay = connectDelay;
+
         if (WiFi.status() == WL_NO_MODULE) {
             printing::dbgln("Communication with WiFi module failed!");
             return false;
@@ -122,6 +113,7 @@ namespace swarm {
 
         while (status != WL_CONNECTED) {
             printing::dbgln("Attempting to connect to WPA SSID: %s", credentials::SWARM_SSID);
+            WiFi.disconnect();
             status = WiFi.begin(credentials::SWARM_SSID, credentials::SWARM_PASSWORD);
             delay(connectDelay);
         }
@@ -133,21 +125,25 @@ namespace swarm {
         printing::dbgln("Starting access point connection...");
         while (!client.connected() && client.connect(server, port)) {
             printing::dbgln("Access point connection failed. Retrying.");
-            delay(3000);
+            delay(100);
         }
 
         printing::dbgln("Client connected.");
         return true;
     }
 
+    bool Device::reconnect() {
+        if (connected()) {
+            return true;
+        }
+        return connect(server, port);
+    }
+
     bool Device::disconnect() {
-        if (client.connected()) {
+        if (connected()) {
             client.stop();
+            return WiFi.status() == WL_DISCONNECTED;
         }
-        if (WiFi.status() == WL_CONNECTED) {
-            WiFi.disconnect();
-        }
-        WiFi.end();
         return true;
     }
 
@@ -161,40 +157,30 @@ namespace swarm {
         sendCommand(Command("TD", packet));
     }
 
-    char* Device::sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse) {
+    CommandResponse Device::sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse) {
         return sendCommand(Command(code, data), awaitResponse);
     }
 
-    char* Device::sendCommand(Command command, bool awaitResponse) {
-        printing::dbgln("Sending command: $%s", command.data);
-        
-        // Cannot send the command
-        if (!client.available()) {
-            return nullptr;
+    CommandResponse Device::sendCommand(Command command, bool awaitResponse) {
+        if (!client.connected()) {
+            printing::dbgln("Client is not connected.");
+            return CommandResponse(nullptr);
         }
 
+        client.write('$');
+        client.write(command.data, command.length);
+        client.write('\n');
         client.flush();
-        client.print('$');
 
-        uint32_t index = 0;
-        while (index < command.length) {
-            client.print(command.data[index++]);
-        }
-        
-        client.print('\n');
-
-        printing::dbgln("Command sent!");
-        char *response = awaitResponse ? readDataBlocking() : nullptr;
-        printing::dbgln(response);
-        // return CommandResponse(response);
-        return response;
+        char *response = awaitResponse ? readMessageBlocking() : nullptr;
+        return CommandResponse(response);
     }
 
-    char *Device::readData() {
+    char *Device::readMessage() {
         static char MESSAGE[MAX_MESSAGE_LENGTH + 1];
         size_t index = 0;
         char c;
-        printing::dbgln("Read Data. Is client available? %d", client.available());
+
         if (!client.available()) {
             return nullptr;
         }
@@ -205,21 +191,20 @@ namespace swarm {
         while ((c = client.read()) != '$');
 
         // Read the message into the array unless escaped by $ or hit end of message buffer
-        while ((c = client.read()) != '$' && index < MAX_MESSAGE_LENGTH) {
+        while ((c = client.read()) != '$'
+                && c != 0xFF // Padding bytes
+                && index < MAX_MESSAGE_LENGTH) {
             MESSAGE[index++] = c;
         }
+        MESSAGE[index] = '\0';
 
         return MESSAGE;
     }
 
-    char *Device::readDataBlocking() {
+    char *Device::readMessageBlocking() {
         char *message;
-        while (true) {
-            while ((message = readData()) == nullptr) {
-                printing::dbgln("No message :(");
-                delay(500);
-            }
-            printing::dbgln(message);
+        while ((message = readMessage()) == nullptr) {
+            delay(500);
         }
         return message;
     }
