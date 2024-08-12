@@ -48,42 +48,44 @@ namespace swarm {
          * @param code (const char [COMMAND_CODE_LENGTH + 1]): 2 character command code with null-termination.
          * @param data (const char *): Null terminated string for the command argument.
         */
-        Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data);
+        Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data) 
+            : Command(code, packets::NodePacket(data)) {}
     };
 
     enum CommandStatus {
         OKAY,
         NONE,
-        CMD_BADPARAM,
-        CMD_BADPARAMLENGTH,
         CMD_BADPARAMVALUE,
+        CMD_BADPARAMLENGTH,
+        CMD_BADPARAM,
         CMD_INVALIDCHAR,
         CMD_NOTIMPLEMENTED,
         CMD_PARAMMISSING,
         CMD_PARAMDUPLICATE,
+        CMD_NMEACHECKSUMFAIL,
     };
 
     extern const char *STATUS_MESSAGES[];
 
-    struct CommandResponse {
+    struct Response {
         char data[MAX_MESSAGE_LENGTH + 1];
         CommandStatus status;
 
         /**
          * Default initializer.
         */
-        CommandResponse();
+        Response(): status(CommandStatus::NONE) {}
 
         /**
          * Constructor which takes a string response and determines
          * the command status.
         */
-        CommandResponse(char response[MAX_MESSAGE_LENGTH + 1]);
+        Response(char response[MAX_MESSAGE_LENGTH + 1]);
 
         /**
          * @returns String status message for response status.
         */
-        const char *statusMessage();
+        inline const char *statusString() { return STATUS_MESSAGES[status]; }
     };
 
     /**
@@ -102,12 +104,12 @@ namespace swarm {
         /**
          * Constructor for the Device struct.
         */
-        Device();
+        Device() : status(WL_IDLE_STATUS) {}
 
         /**
          * Destructor for Device which disconnects from client.
         */
-        ~Device();
+        ~Device() { disconnect(); }
 
         /**
          * Getter for if the Swarm device is connected.
@@ -144,13 +146,20 @@ namespace swarm {
          * Function to retrieve the packet handler from a Swarm object.
          * @returns (PacketHandler) Swarm handler for when a packet is received.
         */
-        packets::PacketHandler getPacketHandler();
+        packets::PacketHandler getPacketHandler() {
+            return [this](packets::NodePacket handler) {
+                this->receivePacket(handler);
+            };
+        }
 
         /**
          * Handler function for the Swarm receiving a packet.
          * @param packet (packets::NodePacket): Packet being received.
         */
-        void receivePacket(packets::NodePacket packet);
+        void receivePacket(packets::NodePacket packet) {
+            send(Command("TD", packet));
+        }
+
 
         /**
          * Convenience function which abstracts the `Command` data structure
@@ -160,9 +169,11 @@ namespace swarm {
          * @param data (const char *): Data to be sent in command.
          * @param awaitResponse (bool): Whether to wait for a response from the modem.
          * 
-         * @returns (CommandResponse): Parsed response.
+         * @returns (Response): Parsed response.
         */
-        CommandResponse sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true);
+        Response send(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse = true) {
+            return send(Command(code, data), awaitResponse);
+        }
 
         /**
          * Function responsible for sending a SWARM command.
@@ -171,9 +182,9 @@ namespace swarm {
          *  leading '$' or trailing checksum.
          * @param awaitResponse (bool): Whether to wait for a response from the modem.
          * 
-         * @returns (CommandResponse): Parsed response.
+         * @returns (Response): Parsed response.
         */
-        CommandResponse sendCommand(Command command, bool awaitResponse = true);
+        Response send(Command command, bool awaitResponse = true);
 
         /**
          * Function to read a single message from the client.

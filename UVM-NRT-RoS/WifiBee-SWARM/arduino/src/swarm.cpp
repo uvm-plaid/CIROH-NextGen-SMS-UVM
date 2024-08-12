@@ -18,15 +18,19 @@
 namespace swarm {
 
     const char *STATUS_MESSAGES[] = {
-        "OKAY",
+        "OK",
         "NONE",
-        "CMD_BADPARAM",
+        "CMD_BADPARAMVALUE",
         "CMD_BADPARAMLENGTH",
+        "CMD_BADPARAM",
         "CMD_INVALIDCHAR",
         "CMD_NOTIMPLEMENTED",
         "CMD_PARAMMISSING",
-        "CMD_PARAMDUPLICATE"
+        "CMD_PARAMDUPLICATE",
+        "CMD_NMEACHECKSUMFAIL",
     };
+
+    constexpr int NUM_STATES = sizeof(STATUS_MESSAGES) / sizeof(STATUS_MESSAGES[0]);
 
     Command::Command(const char code[COMMAND_CODE_LENGTH + 1], packets::NodePacket packet) {
         size_t len;
@@ -55,18 +59,13 @@ namespace swarm {
 
         // Update length (length is length of legitimate bytes, and does not include null character).
         length += CHECKSUM_LENGTH;
-        data[length++] = '\0'; 
+        data[length] = '\0'; 
     }
 
-    Command::Command(const char code[COMMAND_CODE_LENGTH + 1], const char *data) 
-        : Command(code, packets::NodePacket(data)) {}
-
-    CommandResponse::CommandResponse(): status(CommandStatus::NONE) {}
-
-    CommandResponse::CommandResponse(char response[MAX_MESSAGE_LENGTH + 1]) {
-        constexpr char *error_str = "ERR,";
-        constexpr size_t error_str_len = 4;
-        if (data == nullptr) {
+    Response::Response(char response[MAX_MESSAGE_LENGTH + 1]) {
+        const char *error_str = "ERR,";
+        const size_t error_str_len = 4;
+        if (response == nullptr) {
             status = CommandStatus::NONE;
             return;
         }
@@ -78,23 +77,12 @@ namespace swarm {
         }
 
         // Compare error string against all potential candidates
-        for (int index = CommandStatus::CMD_BADPARAM; index < CommandStatus::CMD_PARAMDUPLICATE; ++index) {
+        for (int index = 0; index < NUM_STATES; ++index) {
             if (strstr(ret + error_str_len, STATUS_MESSAGES[index]) != nullptr) {
                 status = (CommandStatus) index;
                 return;
             }
         }
-    }
-
-    const char *CommandResponse::statusMessage() {
-        return STATUS_MESSAGES[status];
-    }
-
-    Device::Device() : status(WL_IDLE_STATUS) {}
-
-    Device::~Device() {
-        disconnect(); 
-        WiFi.end();
     }
 
     bool Device::connect(IPAddress server, uint16_t port, uint32_t connectDelay) {
@@ -141,39 +129,26 @@ namespace swarm {
 
     bool Device::disconnect() {
         if (connected()) {
+            send("RS", "");
             client.stop();
-            return WiFi.status() == WL_DISCONNECTED;
         }
         return true;
     }
 
-    packets::PacketHandler Device::getPacketHandler() {
-        return [this](packets::NodePacket handler) {
-            this->receivePacket(handler);
-        };
-    }
-
-    void Device::receivePacket(packets::NodePacket packet) {
-        sendCommand(Command("TD", packet));
-    }
-
-    CommandResponse Device::sendCommand(const char code[COMMAND_CODE_LENGTH + 1], const char *data, bool awaitResponse) {
-        return sendCommand(Command(code, data), awaitResponse);
-    }
-
-    CommandResponse Device::sendCommand(Command command, bool awaitResponse) {
+    Response Device::send(Command command, bool awaitResponse) {
         if (!client.connected()) {
             printing::dbgln("Client is not connected.");
-            return CommandResponse(nullptr);
+            return Response(nullptr);
         }
 
         client.write('$');
         client.write(command.data, command.length);
         client.write('\n');
-        client.flush();
 
-        char *response = awaitResponse ? readMessageBlocking() : nullptr;
-        return CommandResponse(response);
+        Response response = Response(awaitResponse ? readMessageBlocking() : nullptr);
+        const char *r = response.status == NONE ? response.statusString() : response.data;
+        printing::dbgln("Sent %d characters: $%s\\n, Response: %s", command.length + 2, command.data, r);
+        return response;
     }
 
     char *Device::readMessage() {

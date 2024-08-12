@@ -28,20 +28,9 @@ uint8_t status;
 IPAddress server(192, 168, 4, 1);
 uint16_t port = 23;
 
-// Helper function for debugging if printing is having any issues
-void loopLeds() {
-    digitalWrite(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(1000);
-}
-
 void registerHandlers() {
     packets::registerReceivePacketHandler(device.getPacketHandler());
 }
-
 
 void setup() {
     Serial.begin(9600);
@@ -49,14 +38,10 @@ void setup() {
     delay(500);
     device.connect(server, port);
 
-    const char *commands[][2] = {
-        {"FV", ""}
-    };
-    for (auto cmd: commands) {
-        swarm::Command command = swarm::Command(cmd[0], cmd[1]);
-        swarm::CommandResponse response = device.sendCommand(command);
-        printing::dbgln("Sent $%s, Status: %d, Response: %s", command.data, response.status, response.data);
-    }
+    device.send("RT", "0");
+    // Won't get a response if there have been no datetime messages
+    device.send("DT", "@", false);
+    device.send("FV", "");
 }
 
 void loop() {
