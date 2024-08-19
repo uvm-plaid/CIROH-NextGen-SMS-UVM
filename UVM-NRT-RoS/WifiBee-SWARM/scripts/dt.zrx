@@ -2,14 +2,13 @@
 CALL ZocClearScreen
 
 /* Query most recent datetime occurrence (YYYYMMDDHHMMSS)*/
-/*Call ZocSend "$DT @*70^M"*/
+Call ZocSend "$DT @*70^M"
 
 /* Query rate of DT messages */
-/*CALL ZocSend "$DT ?*0f^M"*/
+CALL ZocSend "$DT ?*0f^M"
 
 /* Set rate of DT params (occurs every N seconds) */
-CALL ZocSend "$DT 10*31^M"
-
-
+/* CALL ZocSend "$DT 10*31^M" */
+CALL ZocSend "$DT 0*00^M"
 
 EXIT

@@ -1,6 +1,10 @@
 /* REXX */
 CALL ZocClearScreen
 
-CALL ZocSend "$CS*10^M"
+/* Message count */
+CALL ZocSend "$MT C=U*12^M"
+
+/* List 10 oldest unsent messages */
+CALL ZocSend "$MT L=U*1d^M"
 
 EXIT
