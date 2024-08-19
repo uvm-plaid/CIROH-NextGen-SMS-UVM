@@ -160,7 +160,6 @@ namespace swarm {
             send(Command("TD", packet));
         }
 
-
         /**
          * Convenience function which abstracts the `Command` data structure
          * and presents a string interface.
