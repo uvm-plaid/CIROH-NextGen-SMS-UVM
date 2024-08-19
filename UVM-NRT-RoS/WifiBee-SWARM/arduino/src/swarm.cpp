@@ -116,7 +116,7 @@ namespace swarm {
             delay(100);
         }
 
-        printing::dbgln("Client connected.");
+        printing::dbgln("Client connected: %d, available: %d", connected(), available());
         return true;
     }
 
@@ -129,7 +129,6 @@ namespace swarm {
 
     bool Device::disconnect() {
         if (connected()) {
-            send("RS", "");
             client.stop();
         }
         return true;
@@ -153,8 +152,8 @@ namespace swarm {
 
     char *Device::readMessage() {
         static char MESSAGE[MAX_MESSAGE_LENGTH + 1];
+        static char c;
         size_t index = 0;
-        char c;
 
         if (!client.available()) {
             return nullptr;
@@ -162,8 +161,10 @@ namespace swarm {
 
         memset(MESSAGE, 0, MAX_MESSAGE_LENGTH + 1);
 
-        // Read to the start of the message
-        while ((c = client.read()) != '$');
+        // Read to the start of the message, do nothing if we are at one
+        while (c != '$' && (c = client.read()) != '$') {
+            printing::dbgln("Discarding char %c", c);
+        }
 
         // Read the message into the array unless escaped by $ or hit end of message buffer
         while ((c = client.read()) != '$'

@@ -38,7 +38,7 @@ void setup() {
     delay(500);
     device.connect(server, port);
 
-    device.send("RT", "0");
+    device.send("RT", "5");
     // Won't get a response if there have been no datetime messages
     device.send("DT", "@", false);
     device.send("FV", "");
