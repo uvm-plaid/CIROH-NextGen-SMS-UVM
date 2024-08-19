@@ -1,0 +1,6 @@
+/* REXX */
+CALL ZocClearScreen
+
+CALL ZocSend "$RS*01^M"
+
+EXIT

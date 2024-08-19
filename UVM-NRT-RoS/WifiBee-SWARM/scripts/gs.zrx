@@ -5,6 +5,7 @@ CALL ZocClearScreen
 CALL ZocSend "$GS @*74^M"
 
 /* Set rate GPS fix quality messages are sent */
-CALL ZocSend "$GS 1*05^M"
+/* CALL ZocSend "$GS 1*05^M" */
+CALL ZocSend "$GS 0*04^M"
 
 EXIT

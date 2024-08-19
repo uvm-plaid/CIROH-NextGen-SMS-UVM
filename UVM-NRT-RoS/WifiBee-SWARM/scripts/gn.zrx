@@ -2,8 +2,11 @@
 CALL ZocClearScreen
 
 /* Get most recent GPS message */
+CALL ZocSend "$GN @*69^M"
 
 /* Set rate GPS messages are sent */
-CALL ZocSend "$GN 1*18^M"
+/* CALL ZocSend "$GN 1*18^M" */
+
+CALL ZocSend "$GN 0*19^M"
 
 EXIT

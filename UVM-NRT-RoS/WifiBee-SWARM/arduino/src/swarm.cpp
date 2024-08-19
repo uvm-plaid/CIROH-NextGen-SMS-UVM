@@ -162,9 +162,7 @@ namespace swarm {
         memset(MESSAGE, 0, MAX_MESSAGE_LENGTH + 1);
 
         // Read to the start of the message, do nothing if we are at one
-        while (c != '$' && (c = client.read()) != '$') {
-            printing::dbgln("Discarding char %c", c);
-        }
+        while (c != '$' && (c = client.read()) != '$');
 
         // Read the message into the array unless escaped by $ or hit end of message buffer
         while ((c = client.read()) != '$'

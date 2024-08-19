@@ -36,9 +36,10 @@ void setup() {
     Serial.begin(9600);
     while (!Serial);
     delay(500);
+    registerHandlers();
     device.connect(server, port);
 
-    device.send("RT", "5");
+    device.send("RT", "0");
     // Won't get a response if there have been no datetime messages
     device.send("DT", "@", false);
     device.send("FV", "");
@@ -47,7 +48,7 @@ void setup() {
 void loop() {
     char *response = nullptr;
     if (Serial.available()) {                
-        switch(Serial.read()) {
+        switch (Serial.read()) {
             case 'g':
                 if ((response = device.readMessage()) != nullptr) {
                     printing::dbgln("%s", response);
@@ -60,6 +61,10 @@ void loop() {
                 break;
             case 'r':
                 printing::dbgln("Reconnecting successful: %d", device.connect(server, port));
+                break;
+            case 's':
+                packet = packets::makeNodePacket(doc);
+                packets::receivePacket(packet);
                 break;
             case 'c':
                 printing::dbgln("Client connected: %d, available: %d", device.connected(), device.available());
