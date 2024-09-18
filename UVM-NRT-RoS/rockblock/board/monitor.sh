@@ -11,6 +11,4 @@ else
     echo Found device in $device_port
 fi
 
-# Build and try to upload
-pio run --target upload
 pio device monitor -p $device_port
