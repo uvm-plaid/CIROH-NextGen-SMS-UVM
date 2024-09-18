@@ -15,17 +15,25 @@
   by Beth Fisher
  */
 
+#include "printing.h"
+
 #include <Arduino.h>
+#include <SPI.h>
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin 8 as an output.
   // green LED on Mayfly logger
   pinMode(8, OUTPUT);
+  Serial.begin(9600);
+  while (!Serial)
+    ;
+  delay(500);
 }
 
 // the loop function runs over and over again forever
 void loop() {
+  printing::dbgln("Hello %s", "World!");
   digitalWrite(8, HIGH); // turn the LED on (HIGH is the voltage level)
   delay(1000);           // wait for a second
   digitalWrite(8, LOW);  // turn the LED off by making the voltage LOW
