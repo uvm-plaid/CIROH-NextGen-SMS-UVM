@@ -1,0 +1,15 @@
+The device that all sounds were captured on had 2 batteries.
+The first one is to power the Mayfly and the second one is to power the microphone.
+The separation was aimed to reduce buzzing noise seen in the previous collected samples.
+
+Below is an explination as to how all samples were collected.
+hail_heavy: simulated using rice to mirror larger hail
+hail_light: simulated using salt to mirror smaller hail
+rain_heavy: jar with holes cut in the top to create the sound of constaint rain, and
+a squirt bottle to create dropplets with more force.
+rain_med: only used the jar with holes cut in the top to supply a steady stream of water dropplets.
+rain_light: used a dropper mechanism to create smaller rain dropplets. May have been too light, 
+resulting in not to much sound being picked up from the microphone.
+snow: used spices like parsley and cayenne. Similar to rain_light, does not sound like anything
+in the recordings due to how light it is and the sensitivity of the microphone
+whitenoise: audio collected without anything being poured onto the cone. 
