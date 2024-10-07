@@ -15,10 +15,26 @@
   by Beth Fisher
  */
 
+#include "RandomForestClassifier.h"
+#include "SVC.h"
 #include "printing.h"
 
+Eloquent::ML::Port::RandomForest rf_clf;
+Eloquent::ML::Port::SVM svm_clf;
+float X[] = {1.2, 3.2, 4.2, 5.4};
+
 #include <Arduino.h>
+#include <CSV_Parser.h>
+#include <IridiumSBD.h>
+#include <SDFat.h>
 #include <SPI.h>
+
+// Default chip select pin for Mayfly
+const int chip_select = 12;
+SdFat sd;
+SdFile file;
+
+void print_directory();
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -29,13 +45,58 @@ void setup() {
   while (!Serial)
     ;
   delay(500);
+
+  // Testing ML Models
+  printing::dbgln("RF Prediction: %d", rf_clf.predict(X));
+  printing::dbgln("SVM Prediction: %d", svm_clf.predict(X));
+
+  // Initialize SD card
+  if (!sd.begin(SS, SPI_MODE0)) {
+    Serial.println("SD card initialization failed!");
+    return;
+  }
+  Serial.println("SD card initialized.");
+
+  // Print all filenames
+  print_directory();
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  printing::dbgln("Hello %s", "World!");
-  digitalWrite(8, HIGH); // turn the LED on (HIGH is the voltage level)
-  delay(1000);           // wait for a second
-  digitalWrite(8, LOW);  // turn the LED off by making the voltage LOW
-  delay(1000);           // wait for a second
+  /*printing::dbgln("Hello %s", "World!");*/
+  /*digitalWrite(8, HIGH); // turn the LED on (HIGH is the voltage level)*/
+  /*delay(1000);           // wait for a second*/
+  /*digitalWrite(8, LOW);  // turn the LED off by making the voltage LOW*/
+  delay(1000); // wait for a second
+}
+
+void print_directory() {
+  Serial.println("Files in root directory:");
+  SdFile dir;
+
+  // Open the root directory
+  if (!dir.openRoot(&sd)) {
+    Serial.println("Failed to open root directory.");
+    return;
+  }
+
+  // List files in the directory
+  dir.rewind();
+  const int max_name_size = 25;
+  char filename[max_name_size];
+  while (true) {
+    memset(filename, 0, max_name_size);
+    SdFile entry;
+    if (!entry.openNext(&dir, O_READ))
+      break;
+
+    // Print the filename
+    Serial.print("Filename: ");
+    entry.getName(filename, max_name_size);
+    Serial.println(filename);
+
+    entry.close();
+  }
+
+  dir.close();
 }
