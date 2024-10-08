@@ -75,14 +75,14 @@
       - Reduces the residual energy w/ as few atoms as possible
       - Gets us an interpretation of the signal structures
       - Based on assumption that most important info of a signal lies in leading synthesizing atoms w/ the highest energy. So, MP selects atoms in order by eliminating the largest residual energy
-    - https://ieeexplore.ieee.org/abstract/document/6469861
-      - (Another article, showing the use of MP in environmental audio)
-      - Question: most articles I’m seeing are from early 2000s-2010s. The latest I’ve seen using MP is 2021. Is this okay, or would this indicate that it’s outdated in the field? Trying to understand how much to research vs just try it out.
-      - Also mentions k-nearest neighbors. Should we try this model?
-     - "A Deep Learning Approach to Speech, Music and Environmental Noise Classification"
-       - (Paper can be downloaded as a PDF, but I am not seeing a link)
-       - Performs both non-neural network models and neural network models, including a CNN. Shows highest accuracy w/ CNN, and SVM slightly behind.
-       - Pages 75-76 have a list of features! Most of which look different from what we've tried. Also shows ranking of features (like feature importance).
+- https://ieeexplore.ieee.org/abstract/document/6469861
+  - (Another article, showing the use of MP in environmental audio)
+  - Question: most articles I’m seeing are from early 2000s-2010s. The latest I’ve seen using MP is 2021. Is this okay, or would this indicate that it’s outdated in the field? Trying to understand how much to research vs just try it out.
+  - Also mentions k-nearest neighbors. Should we try this model?
+- "A Deep Learning Approach to Speech, Music and Environmental Noise Classification"
+  - (Paper can be downloaded as a PDF, but I am not seeing a link)
+  - Performs both non-neural network models and neural network models, including a CNN. Shows highest accuracy w/ CNN, and SVM slightly behind.
+  - Pages 75-76 have a list of features! Most of which look different from what we've tried. Also shows ranking of features (like feature importance).
 
 
 
