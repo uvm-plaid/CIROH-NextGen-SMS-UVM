@@ -12,7 +12,7 @@
       - Short time energy
       - Linear prediction Cepstral Coefficients (LPCC)
       - Matching Pursuit: method of feature extraction
-        - [title] (https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.OrthogonalMatchingPursuit.html)
+        - (https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.OrthogonalMatchingPursuit.html)
         - Still trying to fully understand how this extracts the features/if this creates different features than other methods? Is this being used for feature extraction, feature selection, or both?
         - Question: most articles I’m seeing that use this are from 2000s-2010s. The latest I’ve seen using MP is 2021. Is this okay, or would this indicate that it’s outdated in the field? The articles I did see claim that using MP allows them to get higher accuracy than with just MFCCs.
       - "A Deep Learning Approach to Speech, Music and Environmental Noise Classification"
