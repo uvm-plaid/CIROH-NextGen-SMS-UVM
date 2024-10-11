@@ -6,8 +6,8 @@ const uint32_t frameWindow = nodeWindowMs * 4;
 const uint32_t guardMs = 10;
 
 struct vtable_t {
-  void (*setup)(RH_RF95& rf95);
-  void (*loop)(RH_RF95& rf95);
+  void (*setup)(RHGenericDriver& rf95);
+  void (*loop)(RHGenericDriver& rf95);
 };
 
 extern vtable_t tx_vtable;

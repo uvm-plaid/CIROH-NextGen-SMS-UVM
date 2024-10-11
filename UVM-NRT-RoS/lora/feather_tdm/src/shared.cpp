@@ -1,8 +1,14 @@
 #include "shared.h"
 
+#ifdef ARDUINO_SAMD_MKRWAN1310
+RH_RF95 rf95(10, 9, 2);
+#else 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
+#endif
 
 void basic_setup(uint8_t thisAddress, uint8_t toAddress) {
+    #ifdef ARDUINO_SAMD_MKRWAN1310
+    #else
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
   pinMode(LED, OUTPUT);
@@ -31,6 +37,7 @@ void basic_setup(uint8_t thisAddress, uint8_t toAddress) {
   rf95.setThisAddress(thisAddress);
   rf95.setHeaderFrom(thisAddress);
   rf95.setHeaderTo(toAddress);
+  #endif
 }
 
 void blink() {
@@ -70,12 +77,15 @@ static size_t writeTime(TimePacket time, char* buf, size_t size) {
 }
 
 bool sendTime() {
+    #ifdef ARDUINO_SAMD_MKRWAN1310
+    return true;
+    #else
     div_t now = div(millis(), 1000);
     TimePacket time = {
         now.quot,
         now.rem
     };
-    static unsigned char sendBuf[256];
+    static unsigned char sendBuf[16];
     size_t head = 0;
     sendBuf[head++] = PacketType::TIME;
     head += writeTime(time, (char*)sendBuf + head, sizeof(sendBuf) - head);
@@ -87,19 +97,9 @@ bool sendTime() {
         Serial.print(x, HEX);
         Serial.print(" ");
     }
-    /*
-    Serial.print(sendBuf[0], DEC);
-    Serial.print(" ");
-    uint32_t s;
-    memcpy(&s, &sendBuf[1], sizeof(s));
-    uint32_t ms;
-    memcpy(&ms, &sendBuf[5], sizeof(ms));
-    Serial.print(s, DEC);
-    Serial.print(" ");
-    Serial.print(ms, DEC);
-    */
     Serial.println();
     return success;
+    #endif
 }
 
 size_t recvTime(const uint8_t* buf, size_t len) {
@@ -113,7 +113,7 @@ size_t recvTime(const uint8_t* buf, size_t len) {
 }
 
 int32_t currentNode() {
-    div_t d = div(nowMs(), nodeWindowMs);
+    div_t d = div((int)nowMs(), (int)nodeWindowMs);
     uint32_t distanceFromNextNode = nodeWindowMs - d.rem;
     if (distanceFromNextNode < guardMs) return -1;
 
