@@ -15,24 +15,25 @@
   by Beth Fisher
  */
 
-#include "RandomForestClassifier.h"
-#include "SVC.h"
+#include "MFCC_RF.h"
 #include "printing.h"
 
-Eloquent::ML::Port::RandomForest rf_clf;
-Eloquent::ML::Port::SVM svm_clf;
-float X[] = {1.2, 3.2, 4.2, 5.4};
-
 #include <Arduino.h>
-#include <CSV_Parser.h>
 #include <IridiumSBD.h>
 #include <SDFat.h>
 #include <SPI.h>
 
-// Default chip select pin for Mayfly
+// Default chip select pin for Mayfly SD card
 const int chip_select = 12;
 SdFat sd;
 SdFile file;
+
+Eloquent::ML::Port::RandomForest rf_clf;
+const char *csv_name = "/mfccs_only.csv";
+const uint32_t num_mfccs = 13;
+static float X[num_mfccs];
+static char label[32];
+static char line_buffer[256];
 
 void print_directory();
 
@@ -46,9 +47,7 @@ void setup() {
     ;
   delay(500);
 
-  // Testing ML Models
-  printing::dbgln("RF Prediction: %d", rf_clf.predict(X));
-  printing::dbgln("SVM Prediction: %d", svm_clf.predict(X));
+  printing::dbgln("%.2f", 3.853085);
 
   // Initialize SD card
   if (!sd.begin(SS, SPI_MODE0)) {
@@ -61,13 +60,36 @@ void setup() {
   print_directory();
 }
 
-// the loop function runs over and over again forever
 void loop() {
-  /*printing::dbgln("Hello %s", "World!");*/
-  /*digitalWrite(8, HIGH); // turn the LED on (HIGH is the voltage level)*/
-  /*delay(1000);           // wait for a second*/
-  /*digitalWrite(8, LOW);  // turn the LED off by making the voltage LOW*/
-  delay(1000); // wait for a second
+  file.open(csv_name, FILE_READ);
+  // Parse CSV file and compute accuracy metrics on whole dataset
+  int n = file.fgets(line_buffer, sizeof(line_buffer));
+  int num_rows = 0;
+  int correct_predictions = 0;
+  while (file.available()) {
+    int n = file.fgets(line_buffer, sizeof(line_buffer));
+    // Parse columns
+    char *pch = strtok(line_buffer, ",");
+    int column = 0;
+    while (pch != nullptr) {
+      if (column < num_mfccs) {
+        X[column] = atof(pch);
+      } else {
+        strcpy(label, pch);
+      }
+      pch = strtok(nullptr, ",");
+      ++column;
+    }
+
+    // Make prediction
+    int prediction = rf_clf.predict(X);
+    printing::dbgln("Prediction: %d", prediction);
+
+    ++num_rows;
+  }
+
+  while (true) {
+  }
 }
 
 void print_directory() {

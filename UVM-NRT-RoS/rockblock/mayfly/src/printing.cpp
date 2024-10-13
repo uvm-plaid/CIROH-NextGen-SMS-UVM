@@ -17,7 +17,7 @@ namespace printing {
 static char PRINT_BUFFER[BUFFER_LENGTH];
 
 #define TRY_BUFFER_WRITE(buffer, buffer_length, format, args)                  \
-  {                                                                            \
+  do {                                                                         \
     size_t end = vsnprintf(buffer, buffer_length - 1, format, args);           \
     if (end > BUFFER_LENGTH) {                                                 \
       Serial.print("String too larger for buffer size.");                      \
@@ -25,7 +25,7 @@ static char PRINT_BUFFER[BUFFER_LENGTH];
     } else {                                                                   \
       buffer[end] = '\0';                                                      \
     }                                                                          \
-  }
+  } while (0)
 
 // Print using a pretty large fixed size buffer
 // No handling for anything beyond buffer size currently other than
