@@ -32,7 +32,7 @@ Eloquent::ML::Port::RandomForest rf_clf;
 const char *csv_name = "/mfccs_only.csv";
 const uint32_t num_mfccs = 13;
 static float X[num_mfccs];
-static char label[32];
+static int label;
 static char line_buffer[256];
 
 void print_directory();
@@ -75,7 +75,7 @@ void loop() {
       if (column < num_mfccs) {
         X[column] = atof(pch);
       } else {
-        strcpy(label, pch);
+        label = atoi(pch);
       }
       pch = strtok(nullptr, ",");
       ++column;
@@ -83,10 +83,14 @@ void loop() {
 
     // Make prediction
     int prediction = rf_clf.predict(X);
-    printing::dbgln("Prediction: %d", prediction);
+    if (prediction == label) {
+      ++correct_predictions;
+    }
 
     ++num_rows;
   }
+  printing::dbgln("Got %d / %d predictions correct", correct_predictions,
+                  num_rows);
 
   while (true) {
   }
