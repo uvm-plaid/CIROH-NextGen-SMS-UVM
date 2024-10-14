@@ -16,13 +16,15 @@ static void tx_loop(RHGenericDriver& rf95) {
   Serial.println("tx loop");
 
   if (isCurrentNode(timeNode)) {
+    /*
     Serial.println("Time to send!!");
     if (!sendTime()) {
         Serial.println("Failed to send time!");
     }
+    */
     delay(nodeWindowMs);
   } else if (isCurrentNode(sendNode)) {
-    /*
+    
     Serial.println("Transmitting...");
 
     char radiopacket[20] = "Hello Girls#      ";
@@ -35,7 +37,7 @@ static void tx_loop(RHGenericDriver& rf95) {
     
     Serial.println("Packet sent!");
     delay(nodeWindowMs);
-    */
+    
   } else {
     delay(nodeWindowMs / 2);
   }
