@@ -47,15 +47,11 @@ void LilyGoLoraDevice::setup()
 
     LoRa.setSyncWord(0xAB);
 
-    //LoRa.disableCrc();
     LoRa.enableCrc();
 
     LoRa.disableInvertIQ();
 
     LoRa.setCodingRate4(7);
-
-    // put the radio into receive mode
-    //LoRa.receive();
 }
 
 int32_t LilyGoLoraDevice::recv(uint8_t* buffer, uint8_t length)
