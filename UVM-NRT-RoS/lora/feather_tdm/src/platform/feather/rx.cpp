@@ -1,5 +1,6 @@
 #include <SPI.h>
-#include "shared.h"
+#include "platform/feather/rf95.h"
+#include "tdm.h"
 
 static void rx_setup(RHGenericDriver& rf95) {
   basic_setup(1, 0);

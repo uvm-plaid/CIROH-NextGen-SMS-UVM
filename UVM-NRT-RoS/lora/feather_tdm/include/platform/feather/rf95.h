@@ -1,9 +1,6 @@
-#include <RH_RF95.h>
+#pragma once
 
-const uint32_t nodes = 4;
-const uint32_t nodeWindowMs = 200;
-const uint32_t frameWindow = nodeWindowMs * 4;
-const uint32_t guardMs = 10;
+#include <RH_RF95.h>
 
 struct vtable_t {
   void (*setup)(RHGenericDriver& rf95);
@@ -23,11 +20,3 @@ extern RH_RF95 rf95;
 
 void basic_setup(uint8_t thisAddress, uint8_t toAddress);
 void blink();
-
-bool sendTime();
-bool recvPacket();
-
-// Returns the current node, or -1 if we're in a guard period.
-int32_t currentNode();
-bool isCurrentNode(uint32_t node);
-uint32_t nowMs();
