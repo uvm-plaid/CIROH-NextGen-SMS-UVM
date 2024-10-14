@@ -1,5 +1,6 @@
 #include <SPI.h>
-#include "shared.h"
+#include "platform/feather/rf95.h"
+#include "tdm.h"
 
 static void tx_setup(RHGenericDriver& rf95) {
   Serial.println("Feather LoRa TX Test!");
