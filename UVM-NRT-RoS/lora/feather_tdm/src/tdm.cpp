@@ -1,6 +1,8 @@
 #include "tdm.h"
 #include <Arduino.h>
 
+#include "platform/feather/rf95.h"
+
 struct TimePacket {
     uint32_t sec;
     uint32_t msec;
@@ -46,9 +48,9 @@ bool sendTime() {
     head += writeTime(time, (char*)sendBuf + head, sizeof(sendBuf) - head);
 
     // TODO: Extract this out to common interface
-    bool success = true;
-    // bool success = rf95.send((uint8_t*)sendBuf, head);
-    // rf95.waitPacketSent();
+    //bool success = true;
+    bool success = rf95.send((uint8_t*)sendBuf, head);
+    rf95.waitPacketSent();
     Serial.print("Sending time packet: ");
     for (unsigned int i = 0; i < head; i++) {
         int x = sendBuf[i];

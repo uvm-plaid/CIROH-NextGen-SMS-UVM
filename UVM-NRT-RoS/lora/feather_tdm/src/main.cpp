@@ -1,10 +1,12 @@
 #include "loraDevice.h"
 #include <Arduino.h>
 
-// LilyGo stuff -- to be removed
+#if defined(USING_SX1276) || defined(USING_SX1278)
 #include <U8g2lib.h>
 #include "platform/lilygo/LoRaBoards.h"
-
+#else
+#include "platform/feather/rf95.h"
+#endif
 
 const double FREQ = 915E6;
 
@@ -14,6 +16,8 @@ const vtable_t tab = tx_vtable;
 
 int counter = 0;
 
+// All this stuff is for the Arduino MKLAN 1030 devices.
+// Not sure where to put it yet.
 void sendSetup() {
   Serial.begin(9600);
   while (!Serial);
@@ -72,17 +76,17 @@ void recvLoop() {
 }
 */
 
-
+vtable_t tab = tx_vtable;
 LoraDevice* lora = nullptr;
 
 const bool isReceiving = false;
 
 void setup() {
   // Serial.println("Setting up.");
-  // tab.setup(rf95);
+  tab.setup(rf95);
   // recvSetup();
-  lora = LoraDevice::getInstance();
-  lora->setup();
+  //lora = LoraDevice::getInstance();
+  //lora->setup();
 }
 
 void doReceiveLoop();
@@ -90,13 +94,16 @@ void doSendLoop();
 
 void loop() {
   // Serial.println("Looping.");
-  // tab.loop(rf95);
+  tab.loop(rf95);
   // recvLoop();
+  
+  /*
   if (isReceiving) {
     doReceiveLoop();
   } else {
     doSendLoop();
   }
+  */
 }
 
 char* Sprintf(const char* fmt, ...) {
@@ -109,13 +116,18 @@ char* Sprintf(const char* fmt, ...) {
 }
 
 void doReceiveLoop() {
-      // try to parse packet
+  if (!lora->isAvailable()) return;
+
   static uint8_t packet[256];
-  uint8_t length = 0;
+  int32_t length = 0;
   // save room in recv() for '\0'
   if ((length = lora->recv(packet, sizeof(packet) - 1)) > 0) {
         // received a packet
         packet[length] = '\0';
+        //Serial.print("Recv() returned: ");
+        //Serial.println(length);
+        //Serial.println((char*)packet);
+        #if defined(USING_SX1276) || defined(USING_SX1278)
         if (u8g2) {
             u8g2->clearBuffer();
             u8g2->drawStr(0, 12, "Received OK!");
@@ -124,17 +136,32 @@ void doReceiveLoop() {
             u8g2->drawStr(0, 56, Sprintf("SNR:%.1f", lora->lastSnr()));
             u8g2->sendBuffer();
         }
+        #endif
+    } else {
+      //Serial.print("Recv() returned: ");
+      //Serial.println(length);
     }
 }
 
 void doSendLoop() {
   static int counter = 0;
-  Serial.print("Sending packet: ");
-  Serial.println(counter);
+  if (!lora->isAvailable()) return;
+  //Serial.print("Sending packet: ");
+  //Serial.println(counter);
 
   char* msg = Sprintf("hello %d", counter);
-  lora->send((uint8_t*)msg, strlen(msg));
+  int32_t bytesSent = 0;
+  bytesSent = lora->send((uint8_t*)msg, strlen(msg));
+  if (bytesSent > 0) {
+    Serial.print("Message successfully sent: ");
+    Serial.println(counter);
+  } else if (bytesSent == -1) {
+    Serial.println("Message failed to send.");
+  } else if (bytesSent == -1) {
+    Serial.println("Device unavailable.");
+  }
 
+#if defined(USING_SX1276) || defined(USING_SX1278)
   if (u8g2) {
       char buf[256];
       u8g2->clearBuffer();
@@ -143,5 +170,6 @@ void doSendLoop() {
       u8g2->drawStr(0, 30, buf);
       u8g2->sendBuffer();
   }
+#endif
   counter++;
 }
