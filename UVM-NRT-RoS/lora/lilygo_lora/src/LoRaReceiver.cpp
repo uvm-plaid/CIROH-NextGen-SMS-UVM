@@ -1,10 +1,10 @@
-#if 1
+#if 0
 // Only supports SX1276/SX1278
 #include <LoRa.h>
 #include "LoRaBoards.h"
 
 #ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_FREQ           915.0
 #endif
 #ifndef CONFIG_RADIO_OUTPUT_POWER
 #define CONFIG_RADIO_OUTPUT_POWER   17
@@ -15,7 +15,7 @@
 
 
 #if !defined(USING_SX1276) && !defined(USING_SX1278)
-#error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples
+#error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples"
 #endif
 
 void setup()
@@ -47,14 +47,15 @@ void setup()
 
     LoRa.setSyncWord(0xAB);
 
-    LoRa.disableCrc();
+    //LoRa.disableCrc();
+    LoRa.enableCrc();
 
     LoRa.disableInvertIQ();
 
     LoRa.setCodingRate4(7);
 
     // put the radio into receive mode
-    LoRa.receive();
+    //LoRa.receive();
 
 }
 
