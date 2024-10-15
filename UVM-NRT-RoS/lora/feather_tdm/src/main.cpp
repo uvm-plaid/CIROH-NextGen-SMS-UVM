@@ -77,8 +77,8 @@ void recvLoop() {
 }
 */
 
-constexpr uint32_t DeviceID = 0;
-constexpr bool isGateway = DeviceID == 0;
+constexpr uint32_t DeviceID = 3;
+constexpr bool isGateway = (DeviceID == 0);
 
 static LoraDevice* lora = nullptr;
 
@@ -104,16 +104,17 @@ void doGatewayLoop() {
   static uint8_t packet[256];
   int32_t length = 0;
   const int timeNode = 0;
-  /*
   if (isCurrentNode(timeNode)) {
-    if (!sendTime()) {
-      
+    uint8_t* buffer = nullptr;
+    if (!sendTime(&buffer)) {
+      displayLines("Failed to send time!");
+    } else {
+      static char bytesBuf[16];
+      snprintf(bytesBuf, sizeof(bytesBuf), "%x %x %x %x %x", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
+      displayLines("Sent time at", Sprintf("%dms", millis()), bytesBuf);
     }
-    delay(nodeWindowMs);
   }
-  */
-  // save room in recv() for '\0'
-  if ((length = lora->recv(packet, sizeof(packet) - 1)) > 0) {
+  else if ((length = lora->recv(packet, sizeof(packet) - 1)) > 0) {
       // received a packet
       packet[length] = '\0';
       //Serial.print("Recv() returned: ");
@@ -125,7 +126,9 @@ void doGatewayLoop() {
       displayf("RSSI:%i", lora->lastRssi());
       displayf("SNR:%.1f", lora->lastSnr());
       endDisplayStr();
-    } else if (length < 0) {
+  }
+
+  if (length < 0) {
       const char* errorMsg = "";
       if (length == -1) {
         errorMsg = "Recv() failed";
@@ -135,40 +138,65 @@ void doGatewayLoop() {
         errorMsg = "Unknown";
       }
       displayLines("Receive FAIL!", errorMsg);
-    }
+  }
 }
 
 void doSendLoop() {
   static int counter = 0;
+  static bool hasConnected = false;
 
-  const char* msg = Sprintf("hello %d", counter);
-  int32_t bytesSent = 0;
-  bytesSent = lora->send((uint8_t*)msg, strlen(msg));
-  if (bytesSent > 0) {
-    Serial.print("Message successfully sent: ");
-    Serial.println(counter);
-  } else if (bytesSent == -1) {
-    Serial.println("Message failed to send.");
-  } else if (bytesSent == -1) {
-    Serial.println("Device unavailable.");
+  if (!isConnected()) {
+    uint8_t* buffer;
+    int error = recvTime(&buffer);
+    switch (error) {
+      case -1:
+        displayLines("Received non-time", "packet.", Sprintf("%d", buffer[0]));
+        break;
+      case -2:
+        displayLines("Received invalid", "time packet.", Sprintf("%x", *(uint32_t*)&buffer[1]));
+        break;
+    }
+    if (error == 1) {
+      displayLines("Received time", "packet!");
+    }
+  } else if (!hasConnected) {
+    hasConnected = true;
+    displayLines("Connected.");
   }
 
-  const char* errorMsg = 0;
-  if (bytesSent > 0) {
-    errorMsg = "OK!";
-  } else if (bytesSent == -1) {
-    errorMsg = "FTS"; // failed to send
-  } else if (bytesSent == -2) {
-    errorMsg = "UNA"; // Device unavailable
-  } else {
-    errorMsg = "UNK"; // Unknowon error occurred
-  }
-  beginDisplayStr();
-  displayf("Transmitting: %s", errorMsg);
-  displayf("Sending: %d", counter);
-  endDisplayStr();
+  if (isCurrentNode(DeviceID)) {
+    // My turn to talk!
+    const char* msg = Sprintf("hello %d", counter);
+    int32_t bytesSent = 0;
+    bytesSent = lora->send((uint8_t*)msg, strlen(msg));
+    if (bytesSent > 0) {
+      Serial.print("Message successfully sent: ");
+      Serial.println(counter);
+    } else if (bytesSent == -1) {
+      Serial.println("Message failed to send.");
+    } else if (bytesSent == -1) {
+      Serial.println("Device unavailable.");
+    }
 
-  counter++;
+    const char* errorMsg = 0;
+    if (bytesSent > 0) {
+      errorMsg = "OK!";
+    } else if (bytesSent == -1) {
+      errorMsg = "FTS"; // failed to send
+    } else if (bytesSent == -2) {
+      errorMsg = "UNA"; // Device unavailable
+    } else {
+      errorMsg = "UNK"; // Unknowon error occurred
+    }
+    beginDisplayStr();
+    displayf("Transmitting: %s", errorMsg);
+    displayf("Sending: %d", counter);
+    displayf("t=%d", nowMs());
+    endDisplayStr();
+    counter++;
+  } else if (isCurrentNode(0)) {
+    recvTime();
+  }
 }
 
 
