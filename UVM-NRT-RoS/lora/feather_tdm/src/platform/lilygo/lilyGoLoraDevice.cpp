@@ -56,11 +56,23 @@ void LilyGoLoraDevice::setup()
 
 int32_t LilyGoLoraDevice::recv(uint8_t* buffer, uint8_t length)
 {
+    if (!isAvailable()) return -1;
     int packetLength = LoRa.parsePacket();
 
     // No idea if readBytes() exits early if fewer than `length` bytes
     // are in the received packet, so forcing the issue for now.
-    return (int32_t)LoRa.readBytes(buffer, length > packetLength ? packetLength : length);
+    int32_t bytesRead = (int32_t)LoRa.readBytes(buffer, length > packetLength ? packetLength : length);
+    if (bytesRead == 0) {
+        return 0;
+    }
+
+    if (bytesRead < 4) {
+        // Invalid packet received.
+        return -2;
+    }
+    // There's a 4 byte header that we're ignoring for now.
+    memmove(buffer, buffer + 4, bytesRead - 4);
+    return bytesRead - 4;
 }
 
 int32_t LilyGoLoraDevice::send(const uint8_t* buffer, uint8_t length)
@@ -68,9 +80,12 @@ int32_t LilyGoLoraDevice::send(const uint8_t* buffer, uint8_t length)
     if (!LoRa.beginPacket()) {
         return -1;
     }
-
+    // Write 4 extra bytes for the header
+    uint32_t header = 0;
+    LoRa.write((uint8_t*)&header, sizeof(header));
     int written = LoRa.write(buffer, length);
     LoRa.endPacket();
+    // Return bytes written, not including 4 byte header.
     return written;
 }
 

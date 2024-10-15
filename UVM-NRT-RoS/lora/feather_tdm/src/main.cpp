@@ -84,19 +84,16 @@ vtable_t tab = isReceiving ? rx_vtable : tx_vtable;
 
 LoraDevice* lora = nullptr;
 
-
 void setup() {
 #ifdef USING_SX1276
   lora = LoraDevice::getInstance();
   lora->setup();
 
-#if defined(USING_SX1276) || defined(USING_SX1278)
-        if (u8g2) {
-            u8g2->clearBuffer();
-            u8g2->drawStr(0, 12, "Awaiting first msg");
-            u8g2->sendBuffer();
-        }
-#endif
+  if (u8g2) {
+      u8g2->clearBuffer();
+      u8g2->drawStr(0, 12, "Awaiting first msg");
+      u8g2->sendBuffer();
+  }
 #else
   tab.setup(rf95);
 #endif
@@ -118,8 +115,6 @@ void loop() {
 }
 
 void doReceiveLoop() {
-  //if (!lora->isAvailable()) return;
-
   static uint8_t packet[256];
   int32_t length = 0;
   // save room in recv() for '\0'
@@ -133,13 +128,14 @@ void doReceiveLoop() {
         if (u8g2) {
             u8g2->clearBuffer();
             u8g2->drawStr(0, 12, "Received OK!");
-            u8g2->drawStr(0, 26, (char*)packet + 4);
+            u8g2->drawStr(0, 26, (char*)packet);
             u8g2->drawStr(0, 40, Sprintf("RSSI:%i", lora->lastRssi()));
             u8g2->drawStr(0, 56, Sprintf("SNR:%.1f", lora->lastSnr()));
             u8g2->sendBuffer();
         }
         #endif
     } else if (length < 0) {
+#if defined(USING_SX1276) || defined(USING_SX1278)
       const char* errorMsg = "";
       if (length == -1) {
         errorMsg = "Recv() failed";
@@ -148,13 +144,12 @@ void doReceiveLoop() {
       } else {
         errorMsg = "Unknown";
       }
-#if defined(USING_SX1276) || defined(USING_SX1278)
-        if (u8g2) {
-            u8g2->clearBuffer();
-            u8g2->drawStr(0, 12, "Receive FAIL!");
-            u8g2->drawStr(0, 26, errorMsg);
-            u8g2->sendBuffer();
-        }
+      if (u8g2) {
+          u8g2->clearBuffer();
+          u8g2->drawStr(0, 12, "Receive FAIL!");
+          u8g2->drawStr(0, 26, errorMsg);
+          u8g2->sendBuffer();
+      }
 #endif
       //Serial.print("Recv() returned: ");
       //Serial.println(length);
@@ -163,9 +158,6 @@ void doReceiveLoop() {
 
 void doSendLoop() {
   static int counter = 0;
-  //if (!lora->isAvailable()) return;
-  //Serial.print("Sending packet: ");
-  //Serial.println(counter);
 
   char* msg = Sprintf("hello %d", counter);
   int32_t bytesSent = 0;
