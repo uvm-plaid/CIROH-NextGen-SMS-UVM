@@ -193,6 +193,8 @@ void doSendLoop() {
     displayf("Sending: %d", counter);
     displayf("t=%d", nowMs());
     endDisplayStr();
+    Serial.print("t=");
+    Serial.println(nowMs());
     counter++;
   } else if (isCurrentNode(0)) {
     recvTime();

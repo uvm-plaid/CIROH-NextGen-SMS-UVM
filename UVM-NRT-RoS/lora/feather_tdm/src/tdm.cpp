@@ -101,8 +101,6 @@ int recvTime(uint8_t** buffer) {
         return -2;
     }
 
-    lastReceivedTime.sec = 0;
-    lastReceivedTime.msec = tp.msec;
     lastReceivedTime.localMsec = millis();
 
     return 1;
@@ -124,6 +122,21 @@ bool isCurrentNode(uint32_t node) {
 
 bool isConnected() {
     return !(lastReceivedTime.localMsec == 0 && lastReceivedTime.msec == 0 && lastReceivedTime.sec == 0);
+}
+
+uint32_t lastReceivedTimeMsec()
+{
+    return lastReceivedTime.msec;
+}
+
+uint32_t lastReceivedTimeSec()
+{
+    return lastReceivedTime.sec;
+}
+
+uint32_t lastReceivedTimeLocalMsec()
+{
+
 }
 
 uint32_t nowMs() {
