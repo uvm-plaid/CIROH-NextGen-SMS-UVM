@@ -9,14 +9,14 @@
 #include "platform/feather/rf95.h"
 #endif
 
-const double FREQ = 915E6;
+void beginDisplayStr();
+void displayStr(const char* line);
+void displayf(const char* fmt, ...);
+void endDisplayStr();
+void displayLines(const char* lines[], int numLines);
+void displayLines(const char* line1="", const char* line2="", const char* line3="", const char* line4="");
 
 /*
-// Change this const to change board deploy to Tx or Rx.
-const vtable_t tab = tx_vtable;
-
-int counter = 0;
-
 // All this stuff is for the Arduino MKLAN 1030 devices.
 // Not sure where to put it yet.
 void sendSetup() {
@@ -77,65 +77,55 @@ void recvLoop() {
 }
 */
 
-const bool isReceiving = false;
-#ifndef USING_SX1276
-vtable_t tab = isReceiving ? rx_vtable : tx_vtable;
-#endif
+constexpr uint32_t DeviceID = 0;
+constexpr bool isGateway = DeviceID == 0;
 
-LoraDevice* lora = nullptr;
+static LoraDevice* lora = nullptr;
 
 void setup() {
-#ifdef USING_SX1276
   lora = LoraDevice::getInstance();
   lora->setup();
 
-  if (u8g2) {
-      u8g2->clearBuffer();
-      u8g2->drawStr(0, 12, "Awaiting first msg");
-      u8g2->sendBuffer();
-  }
-#else
-  tab.setup(rf95);
-#endif
+  displayLines("Awaiting first msg");
 }
 
-void doReceiveLoop();
+void doGatewayLoop();
 void doSendLoop();
 
 void loop() {
-#ifdef USING_SX1276
-  if (isReceiving) {
-    doReceiveLoop();
+  if (isGateway) {
+    doGatewayLoop();
   } else {
     doSendLoop();
   }
-#else
-  tab.loop(rf95);
-#endif
 }
 
-void doReceiveLoop() {
+void doGatewayLoop() {
   static uint8_t packet[256];
   int32_t length = 0;
+  const int timeNode = 0;
+  /*
+  if (isCurrentNode(timeNode)) {
+    if (!sendTime()) {
+      
+    }
+    delay(nodeWindowMs);
+  }
+  */
   // save room in recv() for '\0'
   if ((length = lora->recv(packet, sizeof(packet) - 1)) > 0) {
-        // received a packet
-        packet[length] = '\0';
-        //Serial.print("Recv() returned: ");
-        //Serial.println(length);
-        //Serial.println((char*)packet);
-        #if defined(USING_SX1276) || defined(USING_SX1278)
-        if (u8g2) {
-            u8g2->clearBuffer();
-            u8g2->drawStr(0, 12, "Received OK!");
-            u8g2->drawStr(0, 26, (char*)packet);
-            u8g2->drawStr(0, 40, Sprintf("RSSI:%i", lora->lastRssi()));
-            u8g2->drawStr(0, 56, Sprintf("SNR:%.1f", lora->lastSnr()));
-            u8g2->sendBuffer();
-        }
-        #endif
+      // received a packet
+      packet[length] = '\0';
+      //Serial.print("Recv() returned: ");
+      //Serial.println(length);
+      //Serial.println((char*)packet);
+      beginDisplayStr();
+      displayStr("Received OK!");
+      displayStr((char*)packet);
+      displayf("RSSI:%i", lora->lastRssi());
+      displayf("SNR:%.1f", lora->lastSnr());
+      endDisplayStr();
     } else if (length < 0) {
-#if defined(USING_SX1276) || defined(USING_SX1278)
       const char* errorMsg = "";
       if (length == -1) {
         errorMsg = "Recv() failed";
@@ -144,22 +134,14 @@ void doReceiveLoop() {
       } else {
         errorMsg = "Unknown";
       }
-      if (u8g2) {
-          u8g2->clearBuffer();
-          u8g2->drawStr(0, 12, "Receive FAIL!");
-          u8g2->drawStr(0, 26, errorMsg);
-          u8g2->sendBuffer();
-      }
-#endif
-      //Serial.print("Recv() returned: ");
-      //Serial.println(length);
+      displayLines("Receive FAIL!", errorMsg);
     }
 }
 
 void doSendLoop() {
   static int counter = 0;
 
-  char* msg = Sprintf("hello %d", counter);
+  const char* msg = Sprintf("hello %d", counter);
   int32_t bytesSent = 0;
   bytesSent = lora->send((uint8_t*)msg, strlen(msg));
   if (bytesSent > 0) {
@@ -171,25 +153,106 @@ void doSendLoop() {
     Serial.println("Device unavailable.");
   }
 
-#if defined(USING_SX1276) || defined(USING_SX1278)
-  if (u8g2) {
-      static char buf[256];
-      u8g2->clearBuffer();
-      const char* errorMsg = 0;
-      if (bytesSent > 0) {
-        errorMsg = "OK!";
-      } else if (bytesSent == -1) {
-        errorMsg = "FTS"; // failed to send
-      } else if (bytesSent == -2) {
-        errorMsg = "UNA"; // Device unavailable
-      } else {
-        errorMsg = "UNK"; // Unknowon error occurred
-      }
-      u8g2->drawStr(0, 12, Sprintf("Transmitting: %s", errorMsg));
-      snprintf(buf, sizeof(buf), "Sending: %d", counter);
-      u8g2->drawStr(0, 30, buf);
-      u8g2->sendBuffer();
+  const char* errorMsg = 0;
+  if (bytesSent > 0) {
+    errorMsg = "OK!";
+  } else if (bytesSent == -1) {
+    errorMsg = "FTS"; // failed to send
+  } else if (bytesSent == -2) {
+    errorMsg = "UNA"; // Device unavailable
+  } else {
+    errorMsg = "UNK"; // Unknowon error occurred
   }
-#endif
+  beginDisplayStr();
+  displayf("Transmitting: %s", errorMsg);
+  displayf("Sending: %d", counter);
+  endDisplayStr();
+
   counter++;
+}
+
+
+/// Functions only for devices with displays below.
+
+static int lineY = 12;
+
+void beginDisplayStr()
+{
+#if defined(USING_SX1276) || defined(USING_SX1278)
+  if (!u8g2) return;
+  u8g2->clearBuffer();
+  lineY = 12;
+#endif
+}
+
+void displayStr(const char* line)
+{
+#if defined(USING_SX1276) || defined(USING_SX1278)
+  if (!u8g2) return;
+  if (lineY > 56) return;
+  u8g2->drawStr(0, lineY, line);
+  lineY += 14;
+#endif
+}
+
+void displayf(const char* fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  const char* str = Vsprintf(fmt, args);
+  va_end(args);
+  displayStr(str);
+}
+
+void endDisplayStr()
+{
+#if defined(USING_SX1276) || defined(USING_SX1278)
+  if (!u8g2) return;
+  u8g2->sendBuffer();
+#endif
+}
+
+void displayLines(const char* lines[], int numLines)
+{
+#if defined(USING_SX1276) || defined(USING_SX1278)
+  if (numLines > 4) {
+    // Can't fit more than 4 lines on the display
+    numLines = 4;
+  }
+  if (!u8g2) return;
+
+  u8g2->clearBuffer();
+  int lineY = 12;
+  for (int i = 0; i < numLines; i++) {
+    u8g2->drawStr(0, lineY, lines[i]);
+    lineY += 14;
+  }
+  u8g2->sendBuffer();
+
+#endif
+}
+
+void displayLines(const char* line1, const char* line2, const char* line3, const char* line4) {
+#if defined(USING_SX1276) || defined(USING_SX1278)
+  if (!u8g2) return;
+
+  u8g2->clearBuffer();
+  int lineY = 12;
+
+  u8g2->drawStr(0, lineY, line1);
+  lineY += 14;
+
+  u8g2->drawStr(0, lineY, line2);
+  lineY += 14;
+
+  u8g2->drawStr(0, lineY, line3);
+  lineY += 14;
+
+  u8g2->drawStr(0, lineY, line4);
+  lineY += 14;
+  
+  u8g2->sendBuffer();
+
+#endif
+
 }

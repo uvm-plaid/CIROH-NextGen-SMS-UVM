@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdarg.h>
 
 const uint32_t nodes = 4;
 const uint32_t nodeWindowMs = 200;
@@ -14,4 +15,5 @@ int32_t currentNode();
 bool isCurrentNode(uint32_t node);
 uint32_t nowMs();
 
-char* Sprintf(const char* fmt, ...);
+const char* Vsprintf(const char* fmt, va_list args);
+const char* Sprintf(const char* fmt, ...);
