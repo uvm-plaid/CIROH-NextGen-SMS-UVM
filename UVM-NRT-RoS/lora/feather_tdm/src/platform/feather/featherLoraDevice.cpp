@@ -4,15 +4,14 @@
 
 void FeatherLoraDevice::setup()
 {
+    while (!Serial);
+    Serial.println("Serial is ready.");
     basic_setup(0, 0);
+    Serial.println("Setup complete!");
 }
 
 int32_t FeatherLoraDevice::recv(uint8_t* buffer, uint8_t length) {
-    if (!isAvailable()) return -2;
-
     if (rf95.recv(buffer, &length)) {
-        // blink to indicate success
-        blink();
         return length;
     } else {
         return -1;
@@ -20,12 +19,12 @@ int32_t FeatherLoraDevice::recv(uint8_t* buffer, uint8_t length) {
 }
 
 int32_t FeatherLoraDevice::send(const uint8_t* buffer, uint8_t length) {
-    if (!isAvailable()) return -2;
+    bool success = rf95.send(buffer, length);
+    rf95.waitPacketSent();
+    return success;
 
     if (rf95.send(buffer, length)) {
         rf95.waitPacketSent();
-        // Blink to indicate success
-        blink();
         return length;
     } else {
         return -1;
@@ -33,7 +32,7 @@ int32_t FeatherLoraDevice::send(const uint8_t* buffer, uint8_t length) {
 }
 
 bool FeatherLoraDevice::isAvailable() {
-    return rf95.available();
+    return true;
 }
 
 int16_t FeatherLoraDevice::lastRssi() {
