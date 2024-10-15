@@ -27,12 +27,10 @@ static void tx_loop(RHGenericDriver& rf95) {
     
     Serial.println("Transmitting...");
 
-    char radiopacket[20] = "Hello Girls#      ";
-    itoa(packetnum++, radiopacket + 13, 10);
+    char* radiopacket = Sprintf("hello %d", packetnum++);
     Serial.print("Sending "); Serial.println(radiopacket);
-    radiopacket[19] = 0;
 
-    rf95.send((uint8_t *)radiopacket, 20);
+    rf95.send((uint8_t *)radiopacket, strlen(radiopacket));
     rf95.waitPacketSent();
     
     Serial.println("Packet sent!");

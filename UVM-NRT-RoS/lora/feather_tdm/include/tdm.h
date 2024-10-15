@@ -13,3 +13,5 @@ int32_t currentNode();
 
 bool isCurrentNode(uint32_t node);
 uint32_t nowMs();
+
+char* Sprintf(const char* fmt, ...);

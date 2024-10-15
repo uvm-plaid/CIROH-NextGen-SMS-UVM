@@ -1,4 +1,5 @@
 #include "loraDevice.h"
+#include "tdm.h"
 #include <Arduino.h>
 
 #if defined(USING_SX1276) || defined(USING_SX1278)
@@ -76,47 +77,48 @@ void recvLoop() {
 }
 */
 
-vtable_t tab = tx_vtable;
+const bool isReceiving = false;
+#ifndef USING_SX1276
+vtable_t tab = isReceiving ? rx_vtable : tx_vtable;
+#endif
+
 LoraDevice* lora = nullptr;
 
-const bool isReceiving = false;
 
 void setup() {
-  // Serial.println("Setting up.");
+#ifdef USING_SX1276
+  lora = LoraDevice::getInstance();
+  lora->setup();
+
+#if defined(USING_SX1276) || defined(USING_SX1278)
+        if (u8g2) {
+            u8g2->clearBuffer();
+            u8g2->drawStr(0, 12, "Awaiting first msg");
+            u8g2->sendBuffer();
+        }
+#endif
+#else
   tab.setup(rf95);
-  // recvSetup();
-  //lora = LoraDevice::getInstance();
-  //lora->setup();
+#endif
 }
 
 void doReceiveLoop();
 void doSendLoop();
 
 void loop() {
-  // Serial.println("Looping.");
-  tab.loop(rf95);
-  // recvLoop();
-  
-  /*
+#ifdef USING_SX1276
   if (isReceiving) {
     doReceiveLoop();
   } else {
     doSendLoop();
   }
-  */
-}
-
-char* Sprintf(const char* fmt, ...) {
-  static char strbuf[32] = {0};
-  va_list args;
-  va_start(args, fmt);
-  vsnprintf(strbuf, sizeof(strbuf), fmt, args);
-  va_end(args);
-  return strbuf;
+#else
+  tab.loop(rf95);
+#endif
 }
 
 void doReceiveLoop() {
-  if (!lora->isAvailable()) return;
+  //if (!lora->isAvailable()) return;
 
   static uint8_t packet[256];
   int32_t length = 0;
@@ -131,13 +133,29 @@ void doReceiveLoop() {
         if (u8g2) {
             u8g2->clearBuffer();
             u8g2->drawStr(0, 12, "Received OK!");
-            u8g2->drawStr(0, 26, (char*)packet);
+            u8g2->drawStr(0, 26, (char*)packet + 4);
             u8g2->drawStr(0, 40, Sprintf("RSSI:%i", lora->lastRssi()));
             u8g2->drawStr(0, 56, Sprintf("SNR:%.1f", lora->lastSnr()));
             u8g2->sendBuffer();
         }
         #endif
-    } else {
+    } else if (length < 0) {
+      const char* errorMsg = "";
+      if (length == -1) {
+        errorMsg = "Recv() failed";
+      } else if (length == -2) {
+        errorMsg = "Device Unav.";
+      } else {
+        errorMsg = "Unknown";
+      }
+#if defined(USING_SX1276) || defined(USING_SX1278)
+        if (u8g2) {
+            u8g2->clearBuffer();
+            u8g2->drawStr(0, 12, "Receive FAIL!");
+            u8g2->drawStr(0, 26, errorMsg);
+            u8g2->sendBuffer();
+        }
+#endif
       //Serial.print("Recv() returned: ");
       //Serial.println(length);
     }
@@ -145,7 +163,7 @@ void doReceiveLoop() {
 
 void doSendLoop() {
   static int counter = 0;
-  if (!lora->isAvailable()) return;
+  //if (!lora->isAvailable()) return;
   //Serial.print("Sending packet: ");
   //Serial.println(counter);
 
@@ -163,9 +181,19 @@ void doSendLoop() {
 
 #if defined(USING_SX1276) || defined(USING_SX1278)
   if (u8g2) {
-      char buf[256];
+      static char buf[256];
       u8g2->clearBuffer();
-      u8g2->drawStr(0, 12, "Transmitting: OK!");
+      const char* errorMsg = 0;
+      if (bytesSent > 0) {
+        errorMsg = "OK!";
+      } else if (bytesSent == -1) {
+        errorMsg = "FTS"; // failed to send
+      } else if (bytesSent == -2) {
+        errorMsg = "UNA"; // Device unavailable
+      } else {
+        errorMsg = "UNK"; // Unknowon error occurred
+      }
+      u8g2->drawStr(0, 12, Sprintf("Transmitting: %s", errorMsg));
       snprintf(buf, sizeof(buf), "Sending: %d", counter);
       u8g2->drawStr(0, 30, buf);
       u8g2->sendBuffer();
