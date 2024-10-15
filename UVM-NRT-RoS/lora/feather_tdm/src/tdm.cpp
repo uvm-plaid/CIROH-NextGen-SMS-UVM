@@ -1,14 +1,14 @@
 #include "tdm.h"
+#include "loraDevice.h"
 #include <Arduino.h>
+#include <stdarg.h>
 
-#if !defined(USING_SX1276)
-#include "platform/feather/rf95.h"
-#endif
-
+#pragma pack(push,1)
 struct TimePacket {
     uint32_t sec;
     uint32_t msec;
 };
+#pragma pack(pop)
 
 static struct Time {
     uint32_t sec;
@@ -20,13 +20,19 @@ static struct Time {
     0,
 };
 
-char* Sprintf(const char* fmt, ...) {
-  static char strbuf[32] = {0};
+const char* Vsprintf(const char* fmt, va_list args)
+{
+    static char strbuf[32] = {0};
+    vsnprintf(strbuf, sizeof(strbuf), fmt, args);
+    return strbuf;
+}
+
+const char* Sprintf(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  vsnprintf(strbuf, sizeof(strbuf), fmt, args);
+  const char* str = Vsprintf(fmt, args);
   va_end(args);
-  return strbuf;
+  return str;
 }
 
 enum PacketType {
@@ -58,10 +64,8 @@ bool sendTime() {
     sendBuf[head++] = PacketType::TIME;
     head += writeTime(time, (char*)sendBuf + head, sizeof(sendBuf) - head);
 
-    // TODO: Extract this out to common interface
-    bool success = true;
-    //bool success = rf95.send((uint8_t*)sendBuf, head);
-    //rf95.waitPacketSent();
+    // Dependency injection > global reference, but for now it's fine
+    bool success = LoraDevice::getInstance()->send((uint8_t*)sendBuf, head);
     Serial.print("Sending time packet: ");
     for (unsigned int i = 0; i < head; i++) {
         int x = sendBuf[i];
@@ -81,6 +85,7 @@ size_t recvTime(const uint8_t* buf, size_t len) {
         lastReceivedTime.msec = tp.msec;
         lastReceivedTime.localMsec = millis();
     }
+    return lenRead;
 }
 
 int32_t currentNode() {
