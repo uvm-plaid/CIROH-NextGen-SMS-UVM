@@ -56,7 +56,6 @@ void LilyGoLoraDevice::setup()
 
 int32_t LilyGoLoraDevice::recv(uint8_t* buffer, uint8_t length)
 {
-    if (!isAvailable()) return -1;
     int packetLength = LoRa.parsePacket();
 
     // No idea if readBytes() exits early if fewer than `length` bytes
