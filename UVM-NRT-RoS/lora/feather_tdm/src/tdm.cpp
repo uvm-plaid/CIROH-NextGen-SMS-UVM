@@ -1,14 +1,14 @@
 #include "tdm.h"
+#include "loraDevice.h"
 #include <Arduino.h>
+#include <stdarg.h>
 
-#if !defined(USING_SX1276)
-#include "platform/feather/rf95.h"
-#endif
-
+#pragma pack(push,1)
 struct TimePacket {
     uint32_t sec;
     uint32_t msec;
 };
+#pragma pack(pop)
 
 static struct Time {
     uint32_t sec;
@@ -20,13 +20,19 @@ static struct Time {
     0,
 };
 
-char* Sprintf(const char* fmt, ...) {
-  static char strbuf[32] = {0};
+const char* Vsprintf(const char* fmt, va_list args)
+{
+    static char strbuf[32] = {0};
+    vsnprintf(strbuf, sizeof(strbuf), fmt, args);
+    return strbuf;
+}
+
+const char* Sprintf(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  vsnprintf(strbuf, sizeof(strbuf), fmt, args);
+  const char* str = Vsprintf(fmt, args);
   va_end(args);
-  return strbuf;
+  return str;
 }
 
 enum PacketType {
@@ -44,24 +50,19 @@ static size_t writeTime(TimePacket time, char* buf, size_t size) {
     return memcpysz(buf, size, (char*)&time, sizeof(time));
 }
 
-bool sendTime() {
+size_t sendTime(uint8_t** buffer) {
     #ifdef ARDUINO_SAMD_MKRWAN1310
     return true;
     #else
-    div_t now = div(millis(), 1000);
-    TimePacket time = {
-        now.quot,
-        now.rem
-    };
-    static unsigned char sendBuf[16];
+    static uint8_t sendBuf[16];
     size_t head = 0;
     sendBuf[head++] = PacketType::TIME;
-    head += writeTime(time, (char*)sendBuf + head, sizeof(sendBuf) - head);
+    *(uint32_t*)&sendBuf[head] = millis();
+    head += sizeof(uint32_t);
+    //head += writeTime(time, (char*)sendBuf + head, sizeof(sendBuf) - head);
 
-    // TODO: Extract this out to common interface
-    bool success = true;
-    //bool success = rf95.send((uint8_t*)sendBuf, head);
-    //rf95.waitPacketSent();
+    // Dependency injection > global reference, but for now it's fine
+    bool success = LoraDevice::getInstance()->send((uint8_t*)sendBuf, head);
     Serial.print("Sending time packet: ");
     for (unsigned int i = 0; i < head; i++) {
         int x = sendBuf[i];
@@ -69,18 +70,40 @@ bool sendTime() {
         Serial.print(" ");
     }
     Serial.println();
-    return success;
+    if (buffer != nullptr) {
+        *buffer = sendBuf;
+    }
+    return head;
     #endif
 }
 
-size_t recvTime(const uint8_t* buf, size_t len) {
-    TimePacket tp;
-    size_t lenRead = memcpysz((char*)&tp, sizeof(tp), (char*)buf, len);
-    if (lenRead != 0) {
-        lastReceivedTime.sec = tp.sec;
-        lastReceivedTime.msec = tp.msec;
-        lastReceivedTime.localMsec = millis();
+int recvTime(uint8_t** buffer) {
+    static uint8_t buf[16];
+    const size_t len = sizeof(buf);
+    if (buffer != nullptr) {
+        *buffer = buf;
     }
+    TimePacket tp;
+    size_t lenRead = LoraDevice::getInstance()->recv(buf, len);
+    if (lenRead <= 0) return 0;
+
+    size_t readHead = 0;
+    uint8_t packetType = -1;
+    packetType = *(uint8_t*)&buf[readHead++];
+    //readHead += memcpysz((char*)&packetType, sizeof(packetType), (const char*)buf + readHead, sizeof(buf) - readHead);
+    if (packetType != 0) return -1;
+
+    //readHead += memcpysz((char*)&lastReceivedTime.sec, sizeof(packetType), (const char*)buf + readHead, sizeof(buf) - readHead);
+    //readHead += memcpysz((char*)&lastReceivedTime.msec, sizeof(lastReceivedTime.msec), (const char*)buf + readHead, sizeof(buf) - readHead);
+    lastReceivedTime.msec = *(uint32_t*)&buf[readHead];
+    readHead += sizeof(uint32_t);
+    if (lenRead != readHead) {
+        return -2;
+    }
+
+    lastReceivedTime.localMsec = millis();
+
+    return 1;
 }
 
 int32_t currentNode() {
@@ -95,6 +118,25 @@ int32_t currentNode() {
 
 bool isCurrentNode(uint32_t node) {
     return currentNode() == node;
+}
+
+bool isConnected() {
+    return !(lastReceivedTime.localMsec == 0 && lastReceivedTime.msec == 0 && lastReceivedTime.sec == 0);
+}
+
+uint32_t lastReceivedTimeMsec()
+{
+    return lastReceivedTime.msec;
+}
+
+uint32_t lastReceivedTimeSec()
+{
+    return lastReceivedTime.sec;
+}
+
+uint32_t lastReceivedTimeLocalMsec()
+{
+
 }
 
 uint32_t nowMs() {
