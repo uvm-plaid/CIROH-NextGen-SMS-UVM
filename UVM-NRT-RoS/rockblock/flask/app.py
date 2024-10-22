@@ -3,39 +3,33 @@ import json
 
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Boolean, Float, Integer
-
-from constants import DB_CONFIG, SECRET_KEY, SSL_ARGS
+from sqlalchemy import Integer, Float
+from constants import DATABASE_URI
 
 DEBUG = True
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = DB_CONFIG
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 
-app.secret_key = SECRET_KEY
 db = SQLAlchemy(app)
 
+# Need to import data model here so it properly creates
+# DB tables prior to starting to serve requests
+from model import *
 
-class SensorReading(db.Model):
-    reading_id = db.Column(Integer, primary_key=True)
-    sensor_id = db.Column(Integer, nullable=False)
-    # Readings & predictions go here
-    temperature = db.Column(Float)
-    humidity = db.Column(Float)
-    precipitation_prediction = db.Column(Integer)
-    intensity_prediction = db.Column(Integer)
-    # ...
+@app.route("/ciroh/echo", methods=["GET"])
+def index():
+    return f"Received: {request.args}"
 
+@app.route
 
-@app.route("/save", methods=["GET"])
+@app.route("/ciroh/save", methods=["POST"])
 def save():
-    packet = json.loads(request.args.get("packet", "{}"))
-    sensor_id = packet.get("s", None)
-    temperature = packet.get("t", None)
-    humidity = packet.get("h", None)
-    precipitation_prediction = packet.get("p", None)
-    intensity_prediction = packet.get("i", None)
+    sensor_id = request.json.get("s", None)
+    temperature = request.json.get("t", None)
+    humidity = request.json.get("h", None)
+    precipitation_prediction = request.json.get("p", None)
+    intensity_prediction = request.json.get("i", None)
     entry = SensorReading(
         sensor_id=sensor_id,
         temperature=temperature,
@@ -46,10 +40,8 @@ def save():
     db.session.add(entry)
     db.session.commit()
 
-    return "Success!"
+    return f"Success!\ Records:\n{SensorReading.query.all()}"
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=DEBUG, port=5000)
