@@ -7,9 +7,15 @@ all the tables once ORM class definitions have been
 made.
 """
 
-from sqlalchemy import Integer, Float, Boolean
+from sqlalchemy import Float, Integer, Text
 from app import app, db
 
+# Temporary table to save raw output to
+class RawData(db.Model):
+    id = db.Column(Integer, primary_key=True)
+    imei = db.Column(Text)
+    timestamp = db.Column(Text)
+    data = db.Column(Text)
 
 class SensorReading(db.Model):
     reading_id = db.Column(Integer, primary_key=True)

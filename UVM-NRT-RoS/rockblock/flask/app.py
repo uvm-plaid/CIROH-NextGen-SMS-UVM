@@ -1,14 +1,24 @@
+"""
+Flask app to receive Cloudloop data packets, parse the JSON
+encoding of the Cloudloop packet, and also parse the format
+of the data packet sent as JSON within the message coming
+from the ROCKBLOCK (max 340 bytes).
 
-import json
+Author: Jordan Bourdeau
+"""
+
 
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, Float
 from constants import DATABASE_URI
 
+from parse import CloudloopPacket
+
 DEBUG = True
 
 app = Flask(__name__)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 
 db = SQLAlchemy(app)
@@ -21,26 +31,26 @@ from model import *
 def index():
     return f"Received: {request.args}"
 
-@app.route
 
-@app.route("/ciroh/save", methods=["POST"])
+@app.route("/ciroh/save", methods=["POST", "GET"])
 def save():
-    sensor_id = request.json.get("s", None)
-    temperature = request.json.get("t", None)
-    humidity = request.json.get("h", None)
-    precipitation_prediction = request.json.get("p", None)
-    intensity_prediction = request.json.get("i", None)
-    entry = SensorReading(
-        sensor_id=sensor_id,
-        temperature=temperature,
-        humidity=humidity,
-        precipitation_prediction=precipitation_prediction,
-        intensity_prediction=intensity_prediction
+    packet = CloudloopPacket(request.json)
+
+    # Test entries for now which just save raw data
+    entry = RawData(
+        imei=packet.imei,
+        timestamp=packet.sbd_received_at.isoformat(),
+        data=packet.sbd_message,
     )
     db.session.add(entry)
     db.session.commit()
 
-    return f"Success!\ Records:\n{SensorReading.query.all()}"
+    return "Success!"
+
+
+@app.route("/ciroh/last_record", methods=["GET"])
+def last_record():
+    return RawData.query.order_by(RawData.id.desc()).first_or_404()
 
 
 if __name__ == "__main__":
