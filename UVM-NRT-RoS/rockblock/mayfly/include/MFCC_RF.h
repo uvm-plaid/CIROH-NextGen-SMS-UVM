@@ -1,9 +1,6 @@
 #pragma once
 
 #include <Arduino.h>
-#include <cstdarg>
-
-#include <Arduino.h>
 #include <stdarg.h>
 namespace Eloquent {
     namespace ML {
