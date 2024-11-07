@@ -10,7 +10,7 @@ struct TimePacket {
 };
 #pragma pack(pop)
 
-static struct Time {
+struct Time {
     uint32_t sec;
     uint32_t msec;
     uint32_t localMsec;
@@ -40,13 +40,13 @@ enum PacketType {
     DATA,
 };
 
-static size_t memcpysz(char* dst, size_t dstsz, const char* src, size_t srcsz) {
+size_t memcpysz(char* dst, size_t dstsz, const char* src, size_t srcsz) {
     if (dstsz < srcsz) return 0;
     memcpy(dst, src, srcsz);
     return srcsz;
 }
 
-static size_t writeTime(TimePacket time, char* buf, size_t size) {
+size_t writeTime(TimePacket time, char* buf, size_t size) {
     return memcpysz(buf, size, (char*)&time, sizeof(time));
 }
 
@@ -59,7 +59,6 @@ size_t sendTime(uint8_t** buffer) {
     sendBuf[head++] = PacketType::TIME;
     *(uint32_t*)&sendBuf[head] = millis();
     head += sizeof(uint32_t);
-    //head += writeTime(time, (char*)sendBuf + head, sizeof(sendBuf) - head);
 
     // Dependency injection > global reference, but for now it's fine
     bool success = LoraDevice::getInstance()->send((uint8_t*)sendBuf, head);
@@ -77,6 +76,23 @@ size_t sendTime(uint8_t** buffer) {
     #endif
 }
 
+template <typename T>
+bool ReadPacket(T* t, const char* buf, size_t bufsize, size_t offset) {
+    if (bufsize < offset + sizeof(T)) {
+        return false;
+    }
+
+    return *(T*)&buf[offset];
+}
+
+bool ReadPacketId(uint8_t* id, const uint8_t* buf, size_t bufsize) {
+    return ReadPacket(id, (const char*)buf, bufsize, 0);
+}
+
+bool ReadPacketMsec(uint32_t* msec, const uint8_t* buf, size_t bufsize) {
+    return ReadPacket(msec, (const char*)buf, bufsize, 1);
+}
+
 int recvTime(uint8_t** buffer) {
     static uint8_t buf[16];
     const size_t len = sizeof(buf);
@@ -87,23 +103,19 @@ int recvTime(uint8_t** buffer) {
     size_t lenRead = LoraDevice::getInstance()->recv(buf, len);
     if (lenRead <= 0) return 0;
 
-    size_t readHead = 0;
-    uint8_t packetType = -1;
-    packetType = *(uint8_t*)&buf[readHead++];
-    //readHead += memcpysz((char*)&packetType, sizeof(packetType), (const char*)buf + readHead, sizeof(buf) - readHead);
-    if (packetType != 0) return -1;
-
-    //readHead += memcpysz((char*)&lastReceivedTime.sec, sizeof(packetType), (const char*)buf + readHead, sizeof(buf) - readHead);
-    //readHead += memcpysz((char*)&lastReceivedTime.msec, sizeof(lastReceivedTime.msec), (const char*)buf + readHead, sizeof(buf) - readHead);
-    lastReceivedTime.msec = *(uint32_t*)&buf[readHead];
-    readHead += sizeof(uint32_t);
-    if (lenRead != readHead) {
-        return -2;
+    uint8_t packetType;
+    if (!ReadPacketId(&packetType, buf, lenRead) || packetType != 0) {
+        return -1;
     }
 
+    if (!ReadPacketMsec(&lastReceivedTime.msec, buf, lenRead)) {
+        return -1;
+    }
+
+    // Update time of last received packet.
     lastReceivedTime.localMsec = millis();
 
-    return 1;
+    return lenRead;
 }
 
 int32_t currentNode() {
@@ -111,7 +123,7 @@ int32_t currentNode() {
     uint32_t distanceFromNextNode = nodeWindowMs - d.rem;
     if (distanceFromNextNode < guardMs) return -1;
 
-    int32_t node = (nowMs() / nodeWindowMs) % nodes;
+    int32_t node = d.quot % nodes;
 
     return node;
 }
@@ -136,7 +148,7 @@ uint32_t lastReceivedTimeSec()
 
 uint32_t lastReceivedTimeLocalMsec()
 {
-
+    return lastReceivedTime.msec;
 }
 
 uint32_t nowMs() {
