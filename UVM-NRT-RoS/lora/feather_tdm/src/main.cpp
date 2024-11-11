@@ -77,7 +77,7 @@ void recvLoop() {
 }
 */
 
-constexpr uint32_t DeviceID = 3;
+constexpr uint32_t DeviceID = 0;
 constexpr bool isGateway = (DeviceID == 0);
 
 static LoraDevice* lora = nullptr;
@@ -92,16 +92,35 @@ void setup() {
 void doGatewayLoop();
 void doSendLoop();
 
+void windowDisplay() {
+  static int lastNode = 0;
+  static int lastNodeStart = 0;
+  static int lastNodeDuration = 0;
+  if (currentNode() != lastNode) {
+    lastNodeDuration = nowMs() - lastNodeStart;
+    lastNodeStart = nowMs();
+    lastNode = currentNode();
+  }
+  beginDisplayStr();
+  displayf("Current Node: %d", currentNode());
+  displayf("t=%d", nowMs());
+  displayf("d_last=%d", lastNodeDuration);
+  endDisplayStr();
+}
+
 void loop() {
   if (isGateway) {
     doGatewayLoop();
+    windowDisplay();
   } else {
     doSendLoop();
   }
 }
 
+
 void doGatewayLoop() {
   static uint8_t packet[256];
+  static char bytesBuf[16];
   int32_t length = 0;
   const int timeNode = 0;
   if (isCurrentNode(timeNode)) {
@@ -109,7 +128,6 @@ void doGatewayLoop() {
     if (!sendTime(&buffer)) {
       displayLines("Failed to send time!");
     } else {
-      static char bytesBuf[16];
       snprintf(bytesBuf, sizeof(bytesBuf), "%x %x %x %x %x", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
       displayLines("Sent time at", Sprintf("%dms", millis()), bytesBuf);
     }
@@ -158,6 +176,8 @@ void doSendLoop() {
     }
     if (error == 1) {
       displayLines("Received time", "packet!");
+    } else {
+      return;
     }
   } else if (!hasConnected) {
     hasConnected = true;
@@ -204,7 +224,9 @@ void doSendLoop() {
 
 /// Functions only for devices with displays below.
 
+#if defined(USING_SX1276) || defined(USING_SX1278)
 static int lineY = 12;
+#endif
 
 void beginDisplayStr()
 {
