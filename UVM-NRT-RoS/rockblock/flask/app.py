@@ -11,7 +11,7 @@ Author: Jordan Bourdeau
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, Float
-from constants import DATABASE_URI
+from constants import DATABASE_URI, LOGGER
 
 from parse import CloudloopPacket
 
@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 # Need to import data model here so it properly creates
 # DB tables prior to starting to serve requests
@@ -32,8 +32,8 @@ def index():
     return f"Received: {request.args}"
 
 
-@app.route("/ciroh/save", methods=["POST", "GET"])
-def save():
+@app.route("/ciroh/save_packet", methods=["POST", "GET"])
+def save_packet():
     packet = CloudloopPacket(request.json)
 
     # Test entries for now which just save raw data
@@ -47,10 +47,23 @@ def save():
 
     return "Success!"
 
+@app.route("/ciroh/add_record", methods=["GET"])
+def add_record():
+    entry = RawData(
+        imei=1,
+        timestamp=datetime.now(),
+        data="Hello world",
+    )
+
+    db.session.add(entry)
+    db.session.commit()
+
+    return "Record added"
 
 @app.route("/ciroh/last_record", methods=["GET"])
 def last_record():
-    return RawData.query.order_by(RawData.id.desc()).first_or_404()
+    entry = db.session.query(RawData).order_by(RawData.id.desc()).first()
+    return str(entry.serialize())
 
 
 if __name__ == "__main__":
