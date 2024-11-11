@@ -7,13 +7,14 @@ from the ROCKBLOCK (max 340 bytes).
 Author: Jordan Bourdeau
 """
 
+from constants import DATABASE_URI, FILE_DIRECTORY, LOGGER
+from parse import CloudloopPacket
 
+from datetime import datetime
+import os
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, Float
-from constants import DATABASE_URI, LOGGER
 
-from parse import CloudloopPacket
 
 DEBUG = True
 
@@ -47,23 +48,24 @@ def save_packet():
 
     return "Success!"
 
-@app.route("/ciroh/add_record", methods=["GET"])
-def add_record():
-    entry = RawData(
-        imei=1,
-        timestamp=datetime.now(),
-        data="Hello world",
-    )
-
-    db.session.add(entry)
-    db.session.commit()
-
-    return "Record added"
 
 @app.route("/ciroh/last_record", methods=["GET"])
 def last_record():
     entry = db.session.query(RawData).order_by(RawData.id.desc()).first()
     return str(entry.serialize())
+
+
+@app.route("/ciroh/save_file", methods=["POST"])
+def save_file():
+    files = request.files
+    for _, stream in files.items():
+        filename = os.path.basename(stream.filename)
+        filename = str(datetime.now()) + " " + filename
+        path = os.path.join(FILE_DIRECTORY, filename)
+        with open(path, "wb") as outfile:
+            outfile.write(stream.read())
+
+    return "Ok"
 
 
 if __name__ == "__main__":

@@ -1,3 +1,14 @@
+"""
+Script used to startup the Flask app.
+
+Author: Jordan Bourdeau
+"""
+
+from constants import FILE_DIRECTORY
+
 import os
-import sys
+
+os.makedirs(FILE_DIRECTORY, exist_ok=True)
+
 from app import app as application
+
