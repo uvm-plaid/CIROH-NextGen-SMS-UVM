@@ -1,3 +1,14 @@
-import sys
-sys.path.insert(0, "/users/j/b/jbourde2/www-root/ciroh/api/v1")
+"""
+Script used to startup the Flask app.
+
+Author: Jordan Bourdeau
+"""
+
+from constants import FILE_DIRECTORY
+
+import os
+
+os.makedirs(FILE_DIRECTORY, exist_ok=True)
+
 from app import app as application
+
