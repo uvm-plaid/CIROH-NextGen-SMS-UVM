@@ -12,7 +12,7 @@ from parse import CloudloopPacket
 
 from datetime import datetime
 import os
-from flask import Flask, request
+from flask import Flask, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -31,6 +31,13 @@ from model import *
 @app.route("/ciroh/echo", methods=["GET"])
 def index():
     return f"Received: {request.args}"
+
+
+@app.route("/ciroh/files", methods=["GET"])
+def files():
+    prefix, path = FILE_DIRECTORY.split("/www-root/")
+    hostname = os.path.basename(prefix)
+    return redirect(f"https://{hostname}.w3.uvm.edu/{path}")
 
 
 @app.route("/ciroh/save_packet", methods=["POST", "GET"])
