@@ -1,6 +1,6 @@
 /**
  * Test program to open the serial connection via USB to the RockBLOCK 9603
- * and interact with it to be ran on a Mac.
+ * and interact with it.
  *
  * Author: Jordan Bourdeau
  */
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   // Hardcoded for now
-  const char *portName = "/dev/tty.usbserial-FTCZUOWG";
+  const char *portName = "/dev/ttyUSB0";
   SerialPort serial(portName);
 
   if (strcmp(argv[1], "time") == 0) {
