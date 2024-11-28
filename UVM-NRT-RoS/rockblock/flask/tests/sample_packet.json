@@ -1,0 +1,45 @@
+{
+  "id": "fa9e74d2-7531-444d-831c-dba140f1ed30",
+  "receivedAt": {
+    "year": 2024,
+    "month": 11,
+    "day": 11,
+    "hour": 2,
+    "minute": 16,
+    "second": 45
+  },
+  "identity": {
+    "accountId": "NqreGlbRkjQzYWdPRXWmLygvMpDoZPOJ",
+    "subscriber": {
+      "id": "QzoKyLgvpDZOYBzPbKgWGrxVMjqdlake",
+      "type": "SUBSCRIBER_TYPE_SBD",
+      "description": ""
+    },
+    "hardware": {
+      "id": "wbpYqLdxyzVrAnYxMqJBQmgRMjGOvoeZ",
+      "type": "HARDWARE_TYPE_UNKNOWN",
+      "imei": "301434061328780",
+      "serial": "",
+      "key": ""
+    },
+    "identifier": "301434061328780",
+    "thingId": "YrLZzemNQwPagWmNaAEyOqXbvMVjAoDG"
+  },
+  "sbd": {
+    "imei": "301434061328780",
+    "cdrReference": "1105190116",
+    "momsn": 2,
+    "mtmsn": 0,
+    "sessionAt": {
+      "year": 2024,
+      "month": 11,
+      "day": 11,
+      "hour": 2,
+      "minute": 16,
+      "second": 44
+    },
+    "status": "SESSION_STATUS_OK"
+  },
+  "message": "SGVsbG8gV29ybGQ=",
+  "signature": ""
+}

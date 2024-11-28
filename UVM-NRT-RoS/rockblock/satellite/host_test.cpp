@@ -1,16 +1,23 @@
 /**
  * Test program to open the serial connection via USB to the RockBLOCK 9603
- * and interact with it to be ran on a Mac.
+ * and interact with it.
  *
  * Author: Jordan Bourdeau
  */
 
 #include <cstring>
+#include <ctime>
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
+
+const int MAX_RESPONSE_LENGTH = 256;
+static char RESPONSE_BUFFER[MAX_RESPONSE_LENGTH];
+const int TIMEZONE_OFFSET = -60 * 60 * 4;
 
 class SerialPort {
 public:
@@ -57,11 +64,59 @@ public:
     tcflush(fd, TCIFLUSH);
   }
 
+  int get_time(std::tm &time) {
+    static char get_time[] = "AT-MSSTM";
+    static char sub[] = "MSSTM: ";
+    static std::tm iridium_epoch = {
+        55,          // tm_sec
+        23,          // tm_min
+        14,          // tm_hour
+        11,          // tm_mday
+        4,           // tm_mon (0 = January, so 4 = May)
+        2014 - 1900, // tm_year (years since 1900)
+        0,           // tm_wday (not set)
+        0,           // tm_yday (not set)
+        -1           // tm_isdst (let the library determine DST)
+    };
+
+    if (int rc = send_receive(get_time, RESPONSE_BUFFER)) {
+      return rc;
+    }
+    // Expect a response in the form of 0xXXXXXXXX which is a 32-bit hex
+    // ascii character string representing the number of 90 millisecond
+    // intervals that have elapsed since the Iridium epoch.
+    char *start = strstr(RESPONSE_BUFFER, sub) + strlen(sub);
+    if (!start) {
+      fprintf(stderr, "Did not find time. Instead got response:\n%s",
+              RESPONSE_BUFFER);
+      return 1;
+    }
+
+    uint64_t intervals = std::stoull(start, nullptr, 16);
+
+    // Calculate total seconds elapsed since the Iridium epoch
+    uint64_t total_ms = intervals * 90; // 90 milliseconds per interval
+    uint64_t total_seconds = total_ms / 1000;
+
+    // Convert to time_t for easier manipulation
+    std::time_t epoch_time = std::mktime(&iridium_epoch);
+    epoch_time += total_seconds;
+    epoch_time += TIMEZONE_OFFSET;
+
+    // Convert to local time (EST)
+    std::tm *local_time = std::localtime(&epoch_time);
+    time = *local_time;
+
+    return 0; // Indicate success
+  }
+
   /**
-   * Send a command, wait for a response, then print it to the screen.
+   * Send a command, wait for a response, then write it to the destination
+   * buffer and print it to the screen.
+   *
+   * @returns (int): Return code.
    */
-  int send_receive(const char *command) {
-    static char buffer[256];
+  int send_receive(const char *command, char dst[MAX_RESPONSE_LENGTH]) {
     fprintf(stdout, "Sending \"%s\"\n", command);
     int cmd_len = strlen(command);
     int n_written = write(fd, command, cmd_len);
@@ -72,10 +127,10 @@ public:
 
     fprintf(stdout, "Wrote %d bytes\n", n_written);
 
-    int n_read = read(fd, buffer, sizeof(buffer) - 1);
+    int n_read = read(fd, dst, MAX_RESPONSE_LENGTH - 1);
     if (n_read > 0) {
-      buffer[n_read] = '\0'; // Null terminate the string
-      fprintf(stdout, "Received %d bytes: %s\n", n_read, buffer);
+      dst[n_read] = '\0'; // Null terminate the string
+      fprintf(stdout, "Received %d bytes: %s\n", n_read, dst);
     } else {
       fprintf(stderr, "Error reading from the serial port.\n");
       return 1;
@@ -92,9 +147,23 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "USAGE: main \"<cmd>\"\n");
     return 1;
   }
-
   // Hardcoded for now
-  const char *portName = "/dev/tty.usbserial-FTCZUOWG";
+  const char *portName = "/dev/ttyUSB0";
   SerialPort serial(portName);
-  return serial.send_receive(argv[1]);
+
+  if (strcmp(argv[1], "time") == 0) {
+    std::tm time;
+    int rc = serial.get_time(time);
+    if (rc) {
+      return rc;
+    }
+
+    // Print the time in EST
+    std::cout << "Timestamp (EST): "
+              << std::put_time(&time, "%Y-%m-%d %H:%M:%S") << " EST"
+              << std::endl;
+    return 0;
+  } else {
+    return serial.send_receive(argv[1], RESPONSE_BUFFER);
+  }
 }
