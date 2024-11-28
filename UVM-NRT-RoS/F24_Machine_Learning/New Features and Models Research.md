@@ -3,14 +3,20 @@
 - New features to possibly test (citations of where to find more info below in notes)
     - Spectral Features
       - Band energy ratio (https://github.com/musikalkemist/AudioSignalProcessingForML/blob/master/22%20-%20Implementing%20Band%20Energy%20Ratio%20from%20Scratch%20with%20Python/Implementing%20band%20energy%20ratio%20from%20scratch.ipynb)
+        - Can also use librosa 'by segmenting the signal into different frequency bands'
       - Spectral Flux
+        - librosa library
       - Statistical Moments
         - Spectral Centroid
+          - librosa library
         - Signal Bandwidth
         - Spectral flatness
+          - librosa library
         - Spectral roll-off
+          - librosa library
       - Short time energy
       - Linear prediction Cepstral Coefficients (LPCC)
+        - 'Can be computed using scipy for Linear Predictive Coding (LPC) and the derive coefficients'
       - Matching Pursuit: method of feature extraction
         - (https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.OrthogonalMatchingPursuit.html)
         - Still trying to fully understand how this extracts the features/if this creates different features than other methods? Is this being used for feature extraction, feature selection, or both?
