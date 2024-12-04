@@ -25,10 +25,14 @@
 #include <Wire.h>
 
 // Default chip select pin for Mayfly SD card
-const int chip_select = 12;
+constexpr int chip_select = 12;
 SdFat sd;
 SdFile file;
+constexpr int PERIPHERAL_ADDRESS = 8;  // Hardcoded address for I2C peripheral
+constexpr int I2C_BUFFER_SIZE = 32;
+static char I2C_BUFFER[I2C_BUFFER_SIZE + 1];
 
+// Commented out to decrease compile times for now
 /*Eloquent::ML::Port::RandomForest rf_clf;*/
 /*const char *csv_name = "/mfccs_only.csv";*/
 /*const uint32_t num_mfccs = 13;*/
@@ -47,14 +51,6 @@ uint32_t setup_sd() {
 	return 0;
 }
 
-/**
- * Start the I2C connection as a client which makes requests to the server
- * (Periodically request data from LoRa module handling comms).
- */
-uint32_t start_i2c() {
-
-}
-
 // the setup function runs once when you press reset or power the board
 void setup() {
 	// initialize digital pin 8 as an output.
@@ -64,11 +60,12 @@ void setup() {
 	while (!Serial)
 		;
 	delay(500);
-	if (setup_sd() || start_i2c()) {
+	if (setup_sd()) {
 		return;
     }
 
-
+    // Start I2C
+    Wire.begin();
 
 	// Print all filenames
 	print_directory();
@@ -106,7 +103,18 @@ void loop() {
 	/*printing::dbgln("Got %d / %d predictions correct", correct_predictions,*/
 	/*								num_rows);*/
 
+    // I2C requests
 	while (true) {
+        Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
+        size_t index = 0;
+        while (Wire.available()) {
+            char c = Wire.read();
+            I2C_BUFFER[index++] = c;
+        }
+        I2C_BUFFER[index] = 0;
+        Serial.print("I2C Response: ");
+        Serial.println(I2C_BUFFER);
+        delay(1000);
 	}
 }
 
