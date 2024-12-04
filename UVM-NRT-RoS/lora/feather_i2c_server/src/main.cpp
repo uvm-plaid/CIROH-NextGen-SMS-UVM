@@ -85,19 +85,25 @@ constexpr uint8_t peripheral_address = 0x08;  // Hardcoded for now
 
 static LoraDevice* lora = nullptr;
 LoraPeripheral* LoraPeripheral::instance = nullptr;
-static LoraPeripheral* server = nullptr;
+static LoraPeripheral* peripheral = nullptr;
 
-void i2c_request(int value) {
-
+void i2c_request_handler() {
+    LoraPacket packet = {};
+    LoraPeripheralStatus status = peripheral->request(packet);
+    if (status == LoraPeripheralStatus::BUFFER_EMPTY) {
+        packet.flags = LoraPacketFlags::NO_MORE_PACKETS;
+        Serial.println("No more packets!");
+    }
+    /*Wire.write(reinterpret_cast<uint8_t*>(&packet), sizeof(LoraPacket));*/
+    Wire.write("Hello, world!");
+    Serial.println("Fulfilled I2C request!");
 }
 
-// Join as the server attending to data requests if the gateway, otherwise
-// join as the client initiating the request. Use 0 as address.
 void i2c_initiate() {
-    server = LoraPeripheral::get_instance();
+    peripheral = LoraPeripheral::get_instance();
     if (isPeripheral) {
         Wire.begin(peripheral_address);
-        Wire.onReceive(i2c_request);
+        Wire.onRequest(i2c_request_handler);
         Serial.println("Setup I2C server.");
     } else {
         // This code should only be running on a server so loop
@@ -133,15 +139,16 @@ void loop() {
     LoraPacket packet;
     for (int i = 0; i <= 10; ++i) {
         packet.source_id = i; 
-        LoraPeripheralStatus status = server->receive(packet);
+        LoraPeripheralStatus status = peripheral->receive(packet);
         Serial.print("Status ");
         Serial.println(static_cast<int>(status));
         if (status == LoraPeripheralStatus::RECEIVE_SUCCESSFUL) {
             Serial.println("Successfully received packet");
         } else {
-            while (server->request(packet) == LoraPeripheralStatus::REQUEST_SUCCESSFUL) {
+            while (peripheral->request(packet) == LoraPeripheralStatus::REQUEST_SUCCESSFUL) {
                 Serial.println("Clearing queue");
             }
+            delay(2500);
         }
         delay(i * 50);
     }
