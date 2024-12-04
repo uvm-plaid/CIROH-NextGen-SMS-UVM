@@ -84,30 +84,25 @@ constexpr bool isServer = isGateway;
 constexpr uint8_t serverAddress = 0x08;  // Hardcoded for now
 
 static LoraDevice* lora = nullptr;
-static LoraServer server;
+LoraServer* LoraServer::instance = nullptr;
+static LoraServer* server = nullptr;
 
-/**
- * Interrupt handler which gets called when the gateway node is
- * requested by a client. Due to the hardcoded 32 byte transfer
- * limit at a time over Arduino I2C this method will continually
- * chunk 32 byte increments at a time to send in frames which
- * tell the host whether there is more data to be received.
- */
-void i2c_request(int val) {
-    // TODO: Implementation
-}
-
+void i2c_request(int value) {}
 
 // Join as the server attending to data requests if the gateway, otherwise
 // join as the client initiating the request. Use 0 as address.
 void i2c_initiate() {
+    server = LoraServer::get_instance();
     if (isServer) {
         Wire.begin(serverAddress);
         Wire.onReceive(i2c_request);
+        Serial.println("Setup I2C server.");
     } else {
-        Wire.begin();
+        // This code should only be running on a server so loop
+        while (true) {}
     }
 }
+
 
 void setup() {
     i2c_initiate();
@@ -135,12 +130,14 @@ void windowDisplay() {
 void loop() {
     LoraPacket packet;
     for (int i = 0; i <= 10; ++i) {
-        packet.data[0] = i; 
-        bool r = server.receive(packet);
-        if (r) {
-            Serial.println("Received packet");
+        packet.source_id = i; 
+        LoraServerStatus status = server->receive(packet);
+        Serial.print("Status ");
+        Serial.println(static_cast<int>(status));
+        if (status == LoraServerStatus::RECEIVE_SUCCESSFUL) {
+            Serial.println("Successfully received packet");
         } else {
-            while (server.request(packet)) {
+            while (server->request(packet) == LoraServerStatus::REQUEST_SUCCESSFUL) {
                 Serial.println("Clearing queue");
             }
         }
