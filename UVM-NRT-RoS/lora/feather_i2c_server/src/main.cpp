@@ -80,21 +80,23 @@ void recvLoop() {
 
 constexpr uint32_t DeviceID = 0;
 constexpr bool isGateway = (DeviceID == 0);
-constexpr bool isServer = isGateway;
-constexpr uint8_t serverAddress = 0x08;  // Hardcoded for now
+constexpr bool isPeripheral = isGateway;
+constexpr uint8_t peripheral_address = 0x08;  // Hardcoded for now
 
 static LoraDevice* lora = nullptr;
-LoraServer* LoraServer::instance = nullptr;
-static LoraServer* server = nullptr;
+LoraPeripheral* LoraPeripheral::instance = nullptr;
+static LoraPeripheral* server = nullptr;
 
-void i2c_request(int value) {}
+void i2c_request(int value) {
+
+}
 
 // Join as the server attending to data requests if the gateway, otherwise
 // join as the client initiating the request. Use 0 as address.
 void i2c_initiate() {
-    server = LoraServer::get_instance();
-    if (isServer) {
-        Wire.begin(serverAddress);
+    server = LoraPeripheral::get_instance();
+    if (isPeripheral) {
+        Wire.begin(peripheral_address);
         Wire.onReceive(i2c_request);
         Serial.println("Setup I2C server.");
     } else {
@@ -131,13 +133,13 @@ void loop() {
     LoraPacket packet;
     for (int i = 0; i <= 10; ++i) {
         packet.source_id = i; 
-        LoraServerStatus status = server->receive(packet);
+        LoraPeripheralStatus status = server->receive(packet);
         Serial.print("Status ");
         Serial.println(static_cast<int>(status));
-        if (status == LoraServerStatus::RECEIVE_SUCCESSFUL) {
+        if (status == LoraPeripheralStatus::RECEIVE_SUCCESSFUL) {
             Serial.println("Successfully received packet");
         } else {
-            while (server->request(packet) == LoraServerStatus::REQUEST_SUCCESSFUL) {
+            while (server->request(packet) == LoraPeripheralStatus::REQUEST_SUCCESSFUL) {
                 Serial.println("Clearing queue");
             }
         }
