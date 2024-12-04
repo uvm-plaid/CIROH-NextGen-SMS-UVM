@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include "loraDevice.h"
 
-LoraServerStatus LoraServer::receive(LoraPacket &src) 
+LoraPeripheralStatus LoraPeripheral::receive(LoraPacket &src) 
 {
     if (full()) {
-        return LoraServerStatus::BUFFER_FULL;
+        return LoraPeripheralStatus::BUFFER_FULL;
     }
 
     size_t pointer = writer;
@@ -22,18 +22,18 @@ LoraServerStatus LoraServer::receive(LoraPacket &src)
             writer = pointer; 
             ++num_packets;
             interrupts(); 
-            return LoraServerStatus::RECEIVE_SUCCESSFUL;
+            return LoraPeripheralStatus::RECEIVE_SUCCESSFUL;
         }
     } while (pointer != writer);
     interrupts(); 
-    return LoraServerStatus::RECEIVE_FAILED; 
+    return LoraPeripheralStatus::RECEIVE_FAILED; 
 }
 
 
-LoraServerStatus LoraServer::request(LoraPacket &dst) 
+LoraPeripheralStatus LoraPeripheral::request(LoraPacket &dst) 
 {
     if (!find_packet()) {
-        return LoraServerStatus::BUFFER_EMPTY;
+        return LoraPeripheralStatus::BUFFER_EMPTY;
     }
     Serial.print("Pointer: ");
     Serial.print(reader);
@@ -54,14 +54,14 @@ LoraServerStatus LoraServer::request(LoraPacket &dst)
         packet_buffer[reader].flag = LoraPacketStatus::FREE;
         --num_packets;
         interrupts();
-        return LoraServerStatus::REQUEST_SUCCESSFUL;
+        return LoraPeripheralStatus::REQUEST_SUCCESSFUL;
     }
     
     interrupts();
-    return LoraServerStatus::REQUEST_FAILED;
+    return LoraPeripheralStatus::REQUEST_FAILED;
 }
 
-bool LoraServer::find_packet() {
+bool LoraPeripheral::find_packet() {
     if (empty()) {
         return false;
     }

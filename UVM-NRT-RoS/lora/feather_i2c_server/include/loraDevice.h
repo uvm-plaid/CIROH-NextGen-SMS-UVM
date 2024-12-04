@@ -34,7 +34,7 @@ enum class LoraPacketStatus: uint8_t {
 /**
  * Flags for potential return values from a lora server operation.
  */
-enum class LoraServerStatus: uint8_t {
+enum class LoraPeripheralStatus: uint8_t {
     BUFFER_FULL,
     BUFFER_EMPTY,
     RECEIVE_SUCCESSFUL,
@@ -99,7 +99,7 @@ const static size_t MAX_NUM_PACKETS = 10;
  * device that will be requested for data by a connected microcontroller to
  * extract any packets which it has received and queued.
  */
-class LoraServer {
+class LoraPeripheral {
 
 private:
     LoraPacketEntry packet_buffer[MAX_NUM_PACKETS];
@@ -118,17 +118,17 @@ private:
     bool find_packet();
 
     // Singleton
-    static LoraServer* instance;
-    LoraServer() : 
+    static LoraPeripheral* instance;
+    LoraPeripheral() : 
         num_packets{0},
         writer{0},
         reader{0} {}
 
 public:
 
-    static LoraServer* get_instance() { 
+    static LoraPeripheral* get_instance() { 
         if (!instance) {
-            instance = new LoraServer();
+            instance = new LoraPeripheral();
         }
         return instance; 
     }
@@ -142,9 +142,9 @@ public:
      *
      * @param src (&LoraPacket): Source buffer packet.
      *
-     * @returns (LoraServerStatus): Status result of operation.
+     * @returns (LoraPeripheralStatus): Status result of operation.
      */
-    LoraServerStatus receive(LoraPacket &src);
+    LoraPeripheralStatus receive(LoraPacket &src);
 
     /**
      * Read a lora packet into a destination buffer, and clear out the existing
@@ -152,9 +152,9 @@ public:
      *
      * @param dst (&LoraPacket): Destination buffer for a packet.
      *
-     * @returns (LoraServerStatus): Status result of operation.
+     * @returns (LoraPeripheralStatus): Status result of operation.
      */
-    LoraServerStatus request(LoraPacket &dst);
+    LoraPeripheralStatus request(LoraPacket &dst);
 
 };
 
