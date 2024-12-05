@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{adjustbox} % For resizing tables to fit the page width
+\usepackage{geometry} % Optional: Adjust page margins if necessary
+\usepackage{pdflscape} % For rotating the page to landscape orientation
+
+\geometry{margin=1in} % Set the page margins
+
+\begin{document}
+
+\begin{landscape} % Rotate the page to landscape
+\begin{center}
+\begin{adjustbox}{width=\textwidth,center}
+\renewcommand{\arraystretch}{1.5} % Adjust row spacing
+\Large % Set font size for the table content
+\begin{tabular}{|| c || c | c | c | c | c |c | c | c||} 
+ \hline
+  & \textbf{Librosa MFCCs} & \textbf{Computed MFCCs} & \textbf{Frequency Domain} & \textbf{Time Domain} & \textbf{Frequency Domain and MFCCs} & \textbf{Time Domain and MFCCs} &\textbf{Frequency and Time Domain} & \textbf{Frequency Domain, Time Domain, and MFCCs} \\ 
+ \hline\hline
+ \textbf{SVM} & 98.33 & 86.67 & 67.90  & 57.64 & 67.90 & 81.66 & 67.90 &  67.90\\ 
+ \hline
+ \textbf{Random Forest} & 98.15 & 86.67 & 89.74 & 80.57 & 97.82 & 96.72 & 91.92 & 98.03 \\ 
+ \hline
+\end{tabular}
+\end{adjustbox}
+\end{center}
+\end{landscape} % End of landscape rotation
+
+\end{document}
