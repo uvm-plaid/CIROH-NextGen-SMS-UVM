@@ -12,35 +12,15 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] == UPLOAD_ERR_OK) {
         exit;
     }
 
-    // Extract weather code from file name
-    $fileName = basename($_FILES['file']['name']);
-    preg_match('/\{(rain|snow|hail|drizzle|none)\}/', $fileName, $matches);
+    $targetFile = $targetDir . basename($_FILES['file']['name']);
 
-    if (!isset($matches[1])) {
-        echo json_encode(["error" => "Invalid file name structure: missing weather code."]);
-        exit;
-    }
-
-    $weatherCode = $matches[1];
-
-    // Create subdirectory for the weather code if it doesn't exist
-    $weatherDir = $targetDir . $weatherCode . "/";
-    if (!is_dir($weatherDir)) {
-        mkdir($weatherDir, 0777, true);
-    }
-
-    // Target file path in the weather-specific subdirectory
-    $targetFile = $weatherDir . $fileName;
-
-    // Check if the file already exists
     if (file_exists($targetFile)) {
-        echo json_encode(["error" => "A file with the same name already exists in the directory."]);
+        echo json_encode(["error" => "A file with the same name already exists."]);
         exit;
     }
 
-    // Move the uploaded file to the target directory
     if (move_uploaded_file($_FILES['file']['tmp_name'], $targetFile)) {
-        echo json_encode(["success" => "File uploaded successfully.", "filename" => $fileName, "directory" => $weatherCode]);
+        echo json_encode(["success" => "File uploaded successfully.", "filename" => basename($targetFile)]);
     } else {
         echo json_encode(["error" => "There was an error uploading the file."]);
     }
