@@ -5,6 +5,7 @@
 send.ino is on the mayfly  
 pass_file.py is on the raspberry pi
 upload.php is on the waiting silk server
+The mayfly should be connected to the pi via a USB connection
 
 ## File Structure
 
