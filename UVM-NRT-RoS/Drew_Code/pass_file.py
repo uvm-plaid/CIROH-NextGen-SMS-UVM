@@ -104,7 +104,7 @@ def save_audio_file(audio_data,code):
     """
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = f"{OUTPUT_DIR}/{timestamp}-code{code}.WAV"
+    file_name = f"{OUTPUT_DIR}/{timestamp}_code_{code}.WAV"
 
     with open(file_name, "wb") as f:
         f.write(audio_data)
