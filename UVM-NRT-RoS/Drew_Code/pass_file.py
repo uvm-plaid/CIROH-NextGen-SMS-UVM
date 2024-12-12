@@ -91,7 +91,7 @@ def is_precipitating():
                 return True, precip
 
         print("It is not precipitating")
-        return False, "none"
+        return False, precip
 
     except Exception as e:
         print(f"An error occurred while fetching the weather data: {e}")
@@ -139,7 +139,7 @@ def main():
             try:
                 audio_data = read_audio_file(ser)
                 precip=is_precipitating()
-                if audio_data and precip[0]: # Comment out precip when u want all recordings to pass
+                if audio_data: #and precip[0]: # Comment out precip when u want all recordings to pass
                     fname=save_audio_file(audio_data,precip[1])
                     send_wav_file(f'{fname}',url)
                 else:
