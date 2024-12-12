@@ -12,11 +12,13 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] == UPLOAD_ERR_OK) {
         exit;
     }
 
-    // Create unique filename
-    $timestamp = date("Ymd_His"); // Format: YYYYMMDD_HHMMSS
-    $targetFile = $targetDir . "audio" . $timestamp . ".WAV";
+    $targetFile = $targetDir . basename($_FILES['file']['name']);
 
-    // Move the uploaded file to the target directory
+    if (file_exists($targetFile)) {
+        echo json_encode(["error" => "A file with the same name already exists."]);
+        exit;
+    }
+
     if (move_uploaded_file($_FILES['file']['tmp_name'], $targetFile)) {
         echo json_encode(["success" => "File uploaded successfully.", "filename" => basename($targetFile)]);
     } else {
@@ -25,4 +27,3 @@ if (isset($_FILES['file']) && $_FILES['file']['error'] == UPLOAD_ERR_OK) {
 } else {
     echo json_encode(["error" => "No file was uploaded or an error occurred during upload."]);
 }
-?>
