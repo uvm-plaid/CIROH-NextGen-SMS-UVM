@@ -184,8 +184,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         fetch(`index.php?action=move_file&file=${file}&category=${category}`)
                             .then(response => response.text())
                             .then(message => {
-                                alert(message);
-                                container.remove(); // Remove the categorized file from the list
+                                container.classList.add('removing'); // Add animation class
+                                setTimeout(() => {
+                                    container.remove(); // Remove after animation
+                                }, 300); // Match this with CSS transition duration
                             });
                     });
 
