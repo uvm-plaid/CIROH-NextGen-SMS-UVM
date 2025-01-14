@@ -11,8 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // List files in the audio directory
         if ($action === 'list_files') {
+            header('Content-Type: application/json');
             $files = array_diff(scandir($audio_dir), array('.', '..'));
-            echo json_encode(array_values($files));
+            error_log("Found files: " . print_r($files, true));
+            die(json_encode(array_values($files)));
         }
 
         // Move file to the selected category
@@ -82,8 +84,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     <script>
         // Fetch the list of audio files from the server
         fetch('index.php?action=list_files')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(files => {
+                console.log('Files received:', files);
                 const audioList = document.getElementById('audioList');
                 files.forEach(file => {
                     // Create an audio player, dropdown, and button for each file
@@ -119,6 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     container.appendChild(button);
                     audioList.appendChild(container);
                 });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('audioList').innerHTML = 'Error loading files: ' + error.message;
             });
     </script>
 </body>
