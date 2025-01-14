@@ -3,7 +3,7 @@ $audio_dir = 'uploads';
 $categorized_dir = 'categorized_files';
 
 // Define allowed categories
-$allowed_categories = ['HeavyRain', 'MediumRain', 'LightRain', 'Snow', 'HeavyHail', 'LightHail', 'WhiteNoise'];
+$allowed_categories = ['HeavyRain', 'MediumRain', 'LightRain', 'Snow', 'HeavyHail', 'LightHail', 'WhiteNoise', 'Delete'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['action'])) {
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     audio.controls = true;
 
                     const select = document.createElement('select');
-                    ['Heavy Rain', 'Medium Rain', 'Light Rain', 'Snow', 'Heavy Hail', 'Light Hail', 'WhiteNoise'].forEach(optionText => {
+                    ['Heavy Rain', 'Medium Rain', 'Light Rain', 'Snow', 'Heavy Hail', 'Light Hail', 'WhiteNoise', 'Delete'].forEach(optionText => {
                         const option = document.createElement('option');
                         option.value = optionText.replace(' ', '');
                         option.textContent = optionText;
