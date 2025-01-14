@@ -66,12 +66,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     <style>
         body {
             font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
         .audio-container {
-            margin-bottom: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
         }
+
+        .audio-container:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .audio-container span {
+            min-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .audio-container audio {
+            flex: 1;
+            max-width: 400px;
+        }
+
         select, button {
-            margin-left: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        select {
+            background-color: white;
+            min-width: 150px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Add animation for removal */
+        .audio-container.removing {
+            opacity: 0;
+            transform: translateX(100px);
         }
     </style>
 </head>
@@ -98,6 +160,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     const container = document.createElement('div');
                     container.className = 'audio-container';
 
+                    // Add filename display
+                    const fileName = document.createElement('span');
+                    fileName.textContent = file;
+                    fileName.style.marginRight = '10px';
+
                     const audio = document.createElement('audio');
                     audio.src = `uploads/${file}`;
                     audio.controls = true;
@@ -122,6 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             });
                     });
 
+                    container.appendChild(fileName);  // Add filename first
                     container.appendChild(audio);
                     container.appendChild(select);
                     container.appendChild(button);
