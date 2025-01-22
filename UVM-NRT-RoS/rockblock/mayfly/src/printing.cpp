@@ -14,12 +14,12 @@
 namespace printing {
 
 // Max buffer length
-static char PRINT_BUFFER[BUFFER_LENGTH];
+static char PRINT_BUFFER[__BUFFER_LENGTH];
 
 #define TRY_BUFFER_WRITE(buffer, buffer_length, format, args)                  \
   do {                                                                         \
     size_t end = vsnprintf(buffer, buffer_length - 1, format, args);           \
-    if (end > BUFFER_LENGTH) {                                                 \
+    if (end > __BUFFER_LENGTH) {                                                 \
       Serial.print("String too larger for buffer size.");                      \
       return;                                                                  \
     } else {                                                                   \
@@ -31,11 +31,11 @@ static char PRINT_BUFFER[BUFFER_LENGTH];
 // No handling for anything beyond buffer size currently other than
 // throwing up our hands and not printing.
 void dbg(const char *format, ...) {
-  if (DEBUG_PRINT) {
+  if (__DEBUG_PRINT) {
     va_list args;
     va_start(args, format);
 
-    TRY_BUFFER_WRITE(PRINT_BUFFER, BUFFER_LENGTH, format, args);
+    TRY_BUFFER_WRITE(PRINT_BUFFER, __BUFFER_LENGTH, format, args);
     Serial.print(PRINT_BUFFER);
 
     va_end(args);
@@ -43,11 +43,11 @@ void dbg(const char *format, ...) {
 }
 
 void dbgln(const char *format, ...) {
-  if (DEBUG_PRINT) {
+  if (__DEBUG_PRINT) {
     va_list args;
     va_start(args, format);
 
-    TRY_BUFFER_WRITE(PRINT_BUFFER, BUFFER_LENGTH, format, args);
+    TRY_BUFFER_WRITE(PRINT_BUFFER, __BUFFER_LENGTH, format, args);
     Serial.println(PRINT_BUFFER);
 
     va_end(args);
