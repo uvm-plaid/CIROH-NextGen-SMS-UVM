@@ -88,7 +88,7 @@ LoraPeripheral* LoraPeripheral::instance = nullptr;
 static LoraPeripheral* peripheral = nullptr;
 
 void i2c_request_handler() {
-    LoraPacket packet = {};
+    LoraPacket packet;
     LoraPeripheralStatus status = peripheral->request(packet);
     if (status == LoraPeripheralStatus::BUFFER_EMPTY) {
         packet.flags = LoraPacketFlags::NO_MORE_PACKETS;
@@ -144,13 +144,8 @@ void loop() {
         Serial.println(static_cast<int>(status));
         if (status == LoraPeripheralStatus::RECEIVE_SUCCESSFUL) {
             Serial.println("Successfully received packet");
-        } else {
-            while (peripheral->request(packet) == LoraPeripheralStatus::REQUEST_SUCCESSFUL) {
-                Serial.println("Clearing queue");
-            }
-            delay(2500);
         }
-        delay(i * 50);
+        delay(500);
     }
 }
 

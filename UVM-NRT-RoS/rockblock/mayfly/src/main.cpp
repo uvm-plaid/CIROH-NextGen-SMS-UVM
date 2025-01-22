@@ -72,44 +72,12 @@ void setup() {
 }
 
 void loop() {
-	/*file.open(csv_name, FILE_READ);*/
-	/*// Parse CSV file and compute accuracy metrics on whole dataset*/
-	/*int n = file.fgets(line_buffer, sizeof(line_buffer));*/
-	/*int num_rows = 0;*/
-	/*int correct_predictions = 0;*/
-	/*while (file.available()) {*/
-	/*	int n = file.fgets(line_buffer, sizeof(line_buffer));*/
-	/*	// Parse columns*/
-	/*	char *pch = strtok(line_buffer, ",");*/
-	/*	int column = 0;*/
-	/*	while (pch != nullptr) {*/
-	/*		if (column < num_mfccs) {*/
-	/*			X[column] = atof(pch);*/
-	/*		} else {*/
-	/*			label = atoi(pch);*/
-	/*		}*/
-	/*		pch = strtok(nullptr, ",");*/
-	/*		++column;*/
-	/*	}*/
-	/**/
-	/*	// Make prediction*/
-	/*	int prediction = rf_clf.predict(X);*/
-	/*	if (prediction == label) {*/
-	/*		++correct_predictions;*/
-	/*	}*/
-	/**/
-	/*	++num_rows;*/
-	/*}*/
-	/*printing::dbgln("Got %d / %d predictions correct", correct_predictions,*/
-	/*								num_rows);*/
-
-    // I2C requests
+    // I2C requests from the feather
 	while (true) {
         Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
         size_t index = 0;
         while (Wire.available()) {
-            char c = Wire.read();
-            I2C_BUFFER[index++] = c;
+            I2C_BUFFER[index++] = Wire.read();
         }
         I2C_BUFFER[index] = 0;
         Serial.print("I2C Response: ");
