@@ -3,8 +3,8 @@
 
 namespace printing {
 
-#define DEBUG_PRINT true
-#define BUFFER_LENGTH 4096
+#define __DEBUG_PRINT true
+#define __BUFFER_LENGTH 4096
 
 /**
  * Debugging print.

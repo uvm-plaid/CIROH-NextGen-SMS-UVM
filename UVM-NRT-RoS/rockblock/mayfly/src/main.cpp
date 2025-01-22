@@ -17,6 +17,7 @@
 
 /*#include "MFCC_RF.h"*/
 #include "printing.h"
+#include "loraDevice.h"
 
 #include <Arduino.h>
 #include <IridiumSBD.h>
@@ -28,9 +29,9 @@
 constexpr int chip_select = 12;
 SdFat sd;
 SdFile file;
-constexpr int PERIPHERAL_ADDRESS = 8;  // Hardcoded address for I2C peripheral
-constexpr int I2C_BUFFER_SIZE = 32;
-static char I2C_BUFFER[I2C_BUFFER_SIZE + 1];
+constexpr uint8_t PERIPHERAL_ADDRESS = 8;  // Hardcoded address for I2C peripheral
+constexpr uint8_t I2C_BUFFER_SIZE = 32;
+static uint8_t I2C_BUFFER[I2C_BUFFER_SIZE + 1];
 
 // Commented out to decrease compile times for now
 /*Eloquent::ML::Port::RandomForest rf_clf;*/
@@ -72,16 +73,22 @@ void setup() {
 }
 
 void loop() {
-    // I2C requests from the feather
+    LoraPacket packet;
+    LoraPacket::SerdeStatus status = LoraPacket::SerdeStatus::Valid;
 	while (true) {
+        // I2C requests from the feather and filles all the packets it can
         Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
-        size_t index = 0;
+        uint32_t index = 0;
         while (Wire.available()) {
             I2C_BUFFER[index++] = Wire.read();
         }
-        I2C_BUFFER[index] = 0;
-        Serial.print("I2C Response: ");
-        Serial.println(I2C_BUFFER);
+
+        // Reset index and start parsing packet 
+        index = 0;
+        while (status == LoraPacket::SerdeStatus::Valid) {
+            packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
+            printing::dbg("Packet ID: %d", packet.source_id);
+        }
         delay(1000);
 	}
 }
