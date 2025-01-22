@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-class LoraDevice
+struct LoraDevice
 {
 public:
     virtual void setup() = 0;
@@ -22,9 +22,9 @@ private:
 };
 
 /**
- * Flags for an entry in the lora server class.
+ * Flags for an entry in the lora server struct.
  */
-enum class LoraPacketStatus: uint8_t {
+enum struct LoraPacketStatus: uint8_t {
     FREE,
     WRITING,
     READING,
@@ -34,7 +34,7 @@ enum class LoraPacketStatus: uint8_t {
 /**
  * Flags for potential return values from a lora server operation.
  */
-enum class LoraPeripheralStatus: uint8_t {
+enum struct LoraPeripheralStatus: uint8_t {
     BUFFER_FULL,
     BUFFER_EMPTY,
     RECEIVE_SUCCESSFUL,
@@ -46,19 +46,20 @@ enum class LoraPeripheralStatus: uint8_t {
 /**
  * Flags for a lora packet being transmitted.
  */
-enum class LoraPacketFlags: uint8_t {
+enum struct LoraPacketFlags: uint8_t {
     // Flags for communicating with host microcontroller
-    NO_MORE_PACKETS,
+    NO_MORE_PACKETS = 1,
     // Flags for between lora devices
 };
 
 /**
- * A class representing a Lora Packet which will be transmitted between Lora
+ * A struct representing a Lora Packet which will be transmitted between Lora
  * modules and to a host microcontroller. Contains sensor readings, and any
  * communication flags.
  */
-class LoraPacket {
-public:
+struct LoraPacket {
+    uint8_t magic;  // 0x7F
+
     // TODO: Firm up actual binary layout with correct fields/sizes
     uint8_t source_id;
     uint16_t sonar;
@@ -69,8 +70,6 @@ public:
     uint8_t phase_prediction;
     uint8_t intensity_prediction;
     LoraPacketFlags flags;
-
-    LoraPacket() {}
 };
 
 constexpr size_t I2C_BUFFER_SIZE = 32;
@@ -82,7 +81,7 @@ static_assert(sizeof(LoraPacket) <= I2C_BUFFER_SIZE, "Lora packet must fit withi
  * such as the current status of an entry (e.g., Is it currently being written
  * to when an interrupt fires).
  */
-class LoraPacketEntry {
+struct LoraPacketEntry {
 public:
     volatile LoraPacketStatus flag; 
     LoraPacket packet;
@@ -99,7 +98,7 @@ const static size_t MAX_NUM_PACKETS = 10;
  * device that will be requested for data by a connected microcontroller to
  * extract any packets which it has received and queued.
  */
-class LoraPeripheral {
+struct LoraPeripheral {
 
 private:
     LoraPacketEntry packet_buffer[MAX_NUM_PACKETS];
