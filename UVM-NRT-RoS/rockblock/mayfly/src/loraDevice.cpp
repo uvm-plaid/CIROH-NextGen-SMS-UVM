@@ -45,8 +45,8 @@ LoraPacket::SerdeStatus LoraPacket::serialize(uint8_t buf[], uint32_t buf_size, 
     } else if (this->magic != LoraPacket::MAGIC) {
         return LoraPacket::SerdeStatus::InvalidMagicNumber;
     }
-    buf[index] = this->magic;
     write_u8(this->magic);
+    write_u8(this->source_id);
     write_u16(this->sonar);
     write_u16(this->solar_radiation);
     write_u16(this->temperature);

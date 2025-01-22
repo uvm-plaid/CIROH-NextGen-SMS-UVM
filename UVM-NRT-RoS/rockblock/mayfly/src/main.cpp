@@ -76,7 +76,7 @@ void loop() {
     LoraPacket packet;
     LoraPacket::SerdeStatus status = LoraPacket::SerdeStatus::Valid;
 	while (true) {
-        // I2C requests from the feather and filles all the packets it can
+        // I2C requests from the feather and files all the packets it can
         Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
         uint32_t index = 0;
         while (Wire.available()) {
@@ -85,9 +85,10 @@ void loop() {
 
         // Reset index and start parsing packet 
         index = 0;
+        packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
         while (status == LoraPacket::SerdeStatus::Valid) {
             packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
-            printing::dbg("Packet ID: %d", packet.source_id);
+            printing::dbgln("Packet ID: %d", packet.source_id);
         }
         delay(1000);
 	}
