@@ -54,8 +54,8 @@ def is_precipitating():
             bool: True if there is precipitation, False otherwise.
             str: The type of precipitation (e.g., "rain", "snow", "hail"). Returns "none" if no precipitation.
     """
-    latitude = 44.5  # Example latitude
-    longitude = -72.7  # Example longitude
+    latitude = 44.5
+    longitude = -72.7
 
     # API endpoint for the NWS gridpoints
     point_url = f"https://api.weather.gov/points/{latitude},{longitude}"
@@ -83,15 +83,54 @@ def is_precipitating():
 
         # Check for precipitation in the latest observation
         text_description = observation_data["properties"].get("textDescription", "").lower()
-        precipitation_types = ["rain", "snow", "hail", "drizzle"]
 
-        for precip in precipitation_types:
-            if precip in text_description:
-                print(f"It is precipitating: {precip}")
-                return True, precip
+        precipitation_mapping = {
+            # Rain variations
+            "heavy rain": "heavy_rain",
+            "torrential": "heavy_rain",
+            "downpour": "heavy_rain",
+            "rain shower": "heavy_rain",
+            "thunderstorm": "heavy_rain",
+            
+            "moderate rain": "medium_rain",
+            "steady rain": "medium_rain",
+            "periods of rain": "medium_rain",
+            "occasional rain": "medium_rain",
+            
+            "light rain": "light_rain",
+            "drizzle": "light_rain",
+            "scattered rain": "light_rain",
+            "few rain": "light_rain",
+            "spotty rain": "light_rain",
+            "intermittent rain": "light_rain",
+            
+            # Hail variations
+            "large hail": "heavy_hail",
+            "heavy hail": "heavy_hail",
+            "severe hail": "heavy_hail",
+            
+            "hail": "light_hail",
+            "small hail": "light_hail",
+            "light hail": "light_hail",
+            
+            # Snow variations
+            "heavy snow": "snow",
+            "moderate snow": "snow",
+            "light snow": "snow",
+            "snow shower": "snow",
+            "flurries": "snow",
+            "wintry mix": "snow",
+            "sleet": "snow",
+            "freezing rain": "snow"
+        }
 
-        print("It is not precipitating")
-        return False, precip
+        for pattern, label in precipitation_mapping.items():
+            if pattern in text_description:
+                print(f"Precipitation detected: {label}")
+                return True, label
+
+        print("No precipitation detected")
+        return False, "no_precipitation"
 
     except Exception as e:
         print(f"An error occurred while fetching the weather data: {e}")
@@ -138,12 +177,13 @@ def main():
         while True:
             try:
                 audio_data = read_audio_file(ser)
-                precip=is_precipitating()
-                if audio_data: #and precip[0]: # Comment out precip when u want all recordings to pass
-                    fname=save_audio_file(audio_data,precip[1])
-                    send_wav_file(f'{fname}',url)
+                is_precip, precip_type = is_precipitating()
+                
+                if audio_data and is_precip:  # Only save and send if precipitation is detected
+                    fname = save_audio_file(audio_data, precip_type)
+                    send_wav_file(fname, url)
                 else:
-                    print("Record Next File.")
+                    print("Skipping recording - no precipitation detected.")
             except Exception as e:
                 print(f"Error: {e}")
 
