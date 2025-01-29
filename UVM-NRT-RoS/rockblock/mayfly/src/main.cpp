@@ -24,6 +24,7 @@
 #include <IridiumSBD.h>
 #include <SdFat.h>
 #include <SPI.h>
+#include <TimeLib.h>
 #include <Wire.h>
 
 // Default chip select pin for Mayfly SD card
@@ -93,6 +94,10 @@ uint32_t fill_i2c_buffer() {
     return i;
 }
 
+void print_time(time_t t) {
+    printing::dbgln("Timestamp:");
+    printing::dbgln("%d-%d-%d %d:%d:%d", year(t), month(t), day(t), hour(t), minute(t), second(t));
+}
 
 void loop() {
     // TODO: Have this function write packets to satellite to be sent with backoff
@@ -102,14 +107,22 @@ void loop() {
 	while (true) {
         fill_i2c_buffer();
 
+        int rc;
         uint32_t i = 0;
+        tmElements_t time;
+        time_t timestamp;
         packet = LoraPacket::deserialize(I2C_BUFFER, I2C_BUFFER_SIZE, i, status);
         if (status == LoraPacket::SerDeStatus::Valid) {
             i = 0;
             while (status == LoraPacket::SerDeStatus::Valid &&
                 (status = packet.serialize(OUT_BUF, sizeof(OUT_BUF), i)) 
                     == LoraPacket::SerDeStatus::Valid) {
-                sat::get_manufacturer();
+                if ((rc = sat::get_time(time)) == 0) {
+                    timestamp = makeTime(time);
+                    print_time(timestamp);
+                } else {
+                    printing::dbgln("Error getting satellite time.");
+                }
                 packet = LoraPacket::deserialize(I2C_BUFFER, I2C_BUFFER_SIZE, i, status);
             }
         }
