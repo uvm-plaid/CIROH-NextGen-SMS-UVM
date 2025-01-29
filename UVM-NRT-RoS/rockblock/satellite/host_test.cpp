@@ -1,6 +1,6 @@
 /**
  * Test program to open the serial connection via USB to the RockBLOCK 9603
- * and interact with it.
+ * and interact with it to be ran on a Mac.
  *
  * Author: Jordan Bourdeau
  */
@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <iomanip>
 #include <iostream>
+#include <stdint.h>
 #include <sstream>
 #include <stdio.h>
 #include <termios.h>

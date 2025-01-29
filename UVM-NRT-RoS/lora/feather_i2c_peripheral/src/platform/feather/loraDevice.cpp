@@ -1,6 +1,6 @@
 #include <loraDevice.h>
 
-LoraPacket LoraPacket::deserialize(const uint8_t buf[], uint32_t buf_size, uint32_t &index, LoraPacket::SerdeStatus &status) {
+LoraPacket LoraPacket::deserialize(const uint8_t buf[], uint32_t buf_size, uint32_t &index, LoraPacket::SerDeStatus &status) {
     auto get_u8 = [&buf, &index]() -> uint8_t { return buf[index++]; };
     auto get_u16 = [get_u8, &buf, &index]() -> uint16_t {
         // Assume little endian byte ordering
