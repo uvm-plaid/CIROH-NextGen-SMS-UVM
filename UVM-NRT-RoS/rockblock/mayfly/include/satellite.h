@@ -1,12 +1,11 @@
 #include <stdint.h>
-#include <time.h>
+#include <TimeLib.h>
 
 extern const int MAX_RESPONSE_LENGTH;
 extern const int TIMEZONE_OFFSET;
-extern tm IRIDIUM_EPOCH;
+extern const tmElements_t IRIDIUM_EPOCH;
 
 namespace sat {
-  int get_time(tm &time);
+  int get_time(tmElements_t &time);
   int get_manufacturer();
-  int send_receive(const char *command, char dst[], uint32_t sz);
 }
