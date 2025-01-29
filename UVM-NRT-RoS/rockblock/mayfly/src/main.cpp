@@ -107,7 +107,7 @@ void loop() {
 	while (true) {
         fill_i2c_buffer();
 
-        int rc;
+        sat::SatCode rc;
         uint32_t i = 0;
         tmElements_t time;
         time_t timestamp;
@@ -117,7 +117,7 @@ void loop() {
             while (status == LoraPacket::SerDeStatus::Valid &&
                 (status = packet.serialize(OUT_BUF, sizeof(OUT_BUF), i)) 
                     == LoraPacket::SerDeStatus::Valid) {
-                if ((rc = sat::get_time(time)) == 0) {
+                if ((rc = sat::get_time(time)) == sat::SatCode::Okay) {
                     timestamp = makeTime(time);
                     print_time(timestamp);
                 } else {
