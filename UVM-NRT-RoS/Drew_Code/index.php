@@ -13,8 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($action === 'list_files') {
             header('Content-Type: application/json');
             $files = array_diff(scandir($audio_dir), array('.', '..'));
+            $files = array_values($files); // Reset array keys
+            
+            // Shuffle and limit to 100 files
+            shuffle($files);
+            $files = array_slice($files, 0, 100);
+            
             error_log("Found files: " . print_r($files, true));
-            die(json_encode(array_values($files)));
+            die(json_encode($files));
         }
 
         // Move file to the selected category
