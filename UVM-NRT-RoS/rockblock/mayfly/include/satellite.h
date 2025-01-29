@@ -3,14 +3,11 @@
 #include <stdint.h>
 #include <TimeLib.h>
 
-extern const uint32_t MAX_RESPONSE_LENGTH;
-extern const int TIMEZONE_OFFSET;
-extern const tmElements_t IRIDIUM_EPOCH;
-
 namespace sat {
     enum class SatCode: uint8_t {
         Okay,
         CmdTooLong,
+        ResponseTooLong,
         RecvErr,
         InvalidResponse,
         NetworkErr,
@@ -69,7 +66,7 @@ namespace sat {
 
     void set_echo(bool echo); 
     sat::SatCode initiate_transfer(sat::SbdixResponse &response);
-    sat::SatCode send_packet(LoraPacket packet);
+    sat::SatCode send_packet(const uint8_t buf[], uint16_t nbytes);
     sat::SatCode get_time(tmElements_t &time);
     sat::SatCode get_manufacturer();
 }

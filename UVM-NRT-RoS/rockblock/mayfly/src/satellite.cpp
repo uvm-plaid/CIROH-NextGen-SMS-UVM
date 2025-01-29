@@ -8,12 +8,12 @@
 // Mobile terminated buffer (receiving responses)
 // Can technically be as large as 1960 bytes, but will be very unlikely to
 // exceed 135 or 270
-const uint32_t MAX_RESPONSE_LENGTH = 270;
-static char MT_BUF[MAX_RESPONSE_LENGTH];
+const uint32_t MAX_RESPONSE_LEN = 270;
+static char MT_BUF[MAX_RESPONSE_LEN];
 
 // Mobile originated buffer (sending packets)
-const uint32_t MAX_PACKET_LENGTH = 340;
-static char MO_BUF[MAX_PACKET_LENGTH];
+const uint32_t MAX_CMD_LEN = 120;
+const uint32_t MAX_PACKET_LEN = 340;
 
 // Hardcoded timezone EST offset and Iridium epoch
 const int TIMEZONE_OFFSET = -60 * 60 * 5;
@@ -31,6 +31,48 @@ const tmElements_t IRIDIUM_EPOCH = {
 bool __DEBUG_ECHO = true;
 void sat::set_echo(bool echo) { __DEBUG_ECHO = echo; }
 #define ECHO(format, ...) do { if (__DEBUG_ECHO) printing::dbgln(format, ##__VA_ARGS__); } while (0)
+
+static sat::SatCode send(const char *command) {
+    ECHO("Sending \"%s\"\n", command);
+    uint32_t cmd_len = strlen(command);
+    if (cmd_len > MAX_CMD_LEN) {
+        return sat::SatCode::CmdTooLong;
+    }
+
+    uint32_t n_written = Serial1.write(command, cmd_len);
+
+    // Write a carriage return to signal end of command and wait for response.
+    Serial1.write("\r");
+    ++n_written;
+
+    ECHO("Wrote %d bytes\n", n_written);
+    return sat::SatCode::Okay;
+}
+
+static sat::SatCode receive(char dst[], uint32_t sz, bool block = true) {
+    size_t index = 0;
+    // Imperfect blocking method which waits half a second after serial becomes
+    // available to make sure all the bytes have been transmitted.
+    if (block) {
+        while (!Serial1.available());
+        delay(500);
+    }
+
+    while (Serial1.available() && index < sz) {
+        dst[index++] = Serial1.read();
+    }
+    if (index == sz) {
+        return sat::SatCode::ResponseTooLong;
+    }
+    if (index > 0) {
+        dst[index] = '\0'; // Null terminate the string
+        ECHO("Received %d bytes: %s\n", index, dst);
+    } else {
+        ECHO("Error reading from the serial port.\n");
+        return sat::SatCode::RecvErr;
+    }
+    return sat::SatCode::Okay;
+}
 
 /**
  * Internal function without a public API.
@@ -50,45 +92,17 @@ static sat::SatCode send_receive(
     uint32_t sz,
     bool block = true
 ) {
-    ECHO("Sending \"%s\"\n", command);
-    uint32_t cmd_len = strlen(command);
-    if (cmd_len > sz) {
-        return sat::SatCode::CmdTooLong;
+    sat::SatCode rc;
+    if ((rc = send(command)) != sat::SatCode::Okay) {
+        return rc;
     }
-
-    uint32_t n_written = Serial1.write(command, cmd_len);
-
-    // Write a carriage return to signal end of command and wait for response.
-    Serial1.write("\r");
-    ++n_written;
-
-    ECHO("Wrote %d bytes\n", n_written);
-
-    size_t index = 0;
-    // Imperfect blocking method which waits half a second after serial becomes
-    // available to make sure all the bytes have been transmitted.
-    if (block) {
-        while (!Serial1.available());
-        delay(500);
-    }
-
-    while (Serial1.available()) {
-        dst[index++] = Serial1.read();
-    }
-    if (index > 0) {
-        dst[index] = '\0'; // Null terminate the string
-        ECHO("Received %d bytes: %s\n", index, dst);
-    } else {
-        ECHO("Error reading from the serial port.\n");
-        return sat::SatCode::RecvErr;
-    }
-    return sat::SatCode::Okay;
+    return receive(dst, sz, block);
 }
 
 sat::SatCode sat::initiate_transfer(sat::SbdixResponse &response) {
     sat::SatCode rc;
     // This has to be a blocking call because it takes a while
-    if ((rc = send_receive("AT+SBDIX", MT_BUF, MAX_RESPONSE_LENGTH, true)) 
+    if ((rc = send_receive("AT+SBDIX", MT_BUF, MAX_RESPONSE_LEN, true)) 
         != sat::SatCode::Okay) {
       return rc;
     }
@@ -134,18 +148,68 @@ sat::SatCode sat::initiate_transfer(sat::SbdixResponse &response) {
     return sat::SatCode::Okay;
 }
 
-sat::SatCode sat::send_packet(LoraPacket packet) {
-    // TODO
+sat::SatCode sat::send_packet(const uint8_t buf[], uint16_t nbytes) {
+    sat::SatCode rc;
+    uint32_t checksum = 0;
+    static char cmd[] = "AT+SBDWB=";
+    // Command, up to 3 digits for len, and 1 for CR
+    static char binary_write[sizeof(cmd) + 4];
+    static char ready[] = "READY\r\n"; 
+    sat::SbdixResponse response;
+
+    // Need room for the '\r' and 2-byte checksum
+    if (nbytes > MAX_PACKET_LEN - 3) {
+        return sat::SatCode::CmdTooLong;
+    }
+
+    // Format binary write command
+    snprintf(binary_write, sizeof(binary_write), "%s%d\r", cmd, nbytes);
+    if ((rc = send_receive(binary_write, MT_BUF, MAX_RESPONSE_LEN, true)) 
+        != sat::SatCode::Okay) {
+        ECHO("Binary write error!");
+        return rc;
+    }
+
+    // Make sure response contains the ready string
+    // Safety for not using strnstr (not part of stdlib): Bounds checked
+    if (strstr(MT_BUF, ready) == nullptr) {
+        ECHO("Did not find ready string in response!");
+        return sat::SatCode::InvalidResponse;
+    }
+
+    // Send the data, keeping track of the checksum
+    for (uint32_t i = 0; i < nbytes; ++i) {
+        checksum += buf[i];
+        Serial1.write(buf[i]);
+    }
+    checksum &= 0xFFFF;  // Truncate to lower 16 bits
+    Serial1.write(static_cast<uint16_t>(checksum));
+
+    if ((rc = receive(MT_BUF, MAX_RESPONSE_LEN, true)) 
+        != sat::SatCode::Okay) {
+        ECHO("Error receiving response after write!");
+        return rc;
+    }
+    
+    // Keep initiating transfers if there is a network error
+    // TODO: Add some limit? Do we want to use this response for anything?
+    while ((rc = sat::initiate_transfer(response)) != sat::SatCode::Okay) {
+        if (rc == sat::SatCode::NetworkErr) {
+            delay(1000);
+        } else {
+            return rc;
+        }
+    }
     return sat::SatCode::Okay;
 }
 
 sat::SatCode sat::get_manufacturer() {
-    return send_receive("AT+CGMI", MT_BUF, MAX_RESPONSE_LENGTH, true);
+    return send_receive("AT+CGMI", MT_BUF, MAX_RESPONSE_LEN, true);
 }
 
 sat::SatCode sat::get_time(tmElements_t &time) {
     sat::SatCode rc;
-    if ((rc = send_receive("AT-MSSTM", MT_BUF, MAX_RESPONSE_LENGTH, true)) != sat::SatCode::Okay) {
+    if ((rc = send_receive("AT-MSSTM", MT_BUF, MAX_RESPONSE_LEN, true)) != sat::SatCode::Okay) {
       return rc;
     }
     // Expect a response in the form of 0xXXXXXXXX which is a 32-bit hex
