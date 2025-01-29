@@ -120,6 +120,10 @@ void loop() {
                 if ((rc = sat::get_time(time)) == sat::SatCode::Okay) {
                     timestamp = makeTime(time);
                     print_time(timestamp);
+                    sat::SbdixResponse response;
+                    sat::initiate_transfer(response);
+                    // For now - finish
+                    while (1);
                 } else {
                     printing::dbgln("Error getting satellite time.");
                 }

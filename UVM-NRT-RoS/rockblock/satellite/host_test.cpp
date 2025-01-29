@@ -5,15 +5,18 @@
  * Author: Jordan Bourdeau
  */
 
+#include <chrono>
 #include <cstring>
 #include <ctime>
 #include <fcntl.h>
 #include <iomanip>
 #include <iostream>
+#include <poll.h>
 #include <stdint.h>
 #include <sstream>
 #include <stdio.h>
 #include <termios.h>
+#include <thread>
 #include <unistd.h>
 
 const int MAX_RESPONSE_LENGTH = 256;
@@ -124,9 +127,32 @@ public:
 
     // Write a carriage return to signal end of command and wait for response.
     write(fd, "\r", 1);
-    sleep(1);
-
     fprintf(stdout, "Wrote %d bytes\n", n_written);
+
+    // Wait until the first byte becomes available, then wait some time to
+    // allow the full response to be received
+    int rc;
+    struct pollfd pfd;
+    pfd.fd = fd;       // The file descriptor to monitor
+    pfd.events = POLLIN; // We're interested in reading
+    pfd.revents = 0;
+
+    while (true) {
+        rc = poll(&pfd, 1, 1000);  // Poll with a 1-second timeout
+
+        if (rc > 0) {
+            if (pfd.revents & POLLIN) {
+                // Slight delay to get all the response
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                break;
+            }
+        } else if (rc == 0) {
+            printf("Timeout occurred, no data yet\n");
+        } else {
+            perror("poll failed");
+            break;
+        }
+    }
 
     int n_read = read(fd, dst, MAX_RESPONSE_LENGTH - 1);
     if (n_read > 0) {
