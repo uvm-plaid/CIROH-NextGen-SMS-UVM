@@ -75,7 +75,7 @@ struct LoraPacket {
     const static uint8_t MAGIC = 0x7F;
 
     // SerDe = Serialization Deserialization
-    enum class SerDeStatus {
+    enum class SerDeStatus: uint8_t {
         InsufficientBufferSize,
         InvalidMagicNumber,
         Valid,

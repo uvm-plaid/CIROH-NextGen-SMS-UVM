@@ -5,11 +5,18 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
-const int MAX_RESPONSE_LENGTH = 256;
-static char RESPONSE_BUFFER[MAX_RESPONSE_LENGTH];
-const int TIMEZONE_OFFSET = -60 * 60 * 5;
-bool __DEBUG_ECHO = true;
+// Mobile terminated buffer (receiving responses)
+// Can technically be as large as 1960 bytes, but will be very unlikely to
+// exceed 135 or 270
+const uint32_t MAX_RESPONSE_LENGTH = 270;
+static char MT_BUF[MAX_RESPONSE_LENGTH];
 
+// Mobile originated buffer (sending packets)
+const uint32_t MAX_PACKET_LENGTH = 340;
+static char MO_BUF[MAX_PACKET_LENGTH];
+
+// Hardcoded timezone EST offset and Iridium epoch
+const int TIMEZONE_OFFSET = -60 * 60 * 5;
 const tmElements_t IRIDIUM_EPOCH = {
     55,  // Second
     23,  // Minute
@@ -20,6 +27,8 @@ const tmElements_t IRIDIUM_EPOCH = {
     2014 - 1970,  // Year - offset from 1970
 };
 
+// Debug printing
+bool __DEBUG_ECHO = true;
 void sat::set_echo(bool echo) { __DEBUG_ECHO = echo; }
 #define ECHO(format, ...) do { if (__DEBUG_ECHO) printing::dbgln(format, ##__VA_ARGS__); } while (0)
 
@@ -64,28 +73,31 @@ static sat::SatCode send_receive(const char *command, char dst[], uint32_t sz) {
     return sat::SatCode::Okay;
 }
 
+sat::SbdixResponse sat::initiate_transfer() {
+    sat::SbdixResponse response;
+    return response;
+}
+
 sat::SatCode sat::send_packet(LoraPacket packet) {
     return sat::SatCode::Okay;
 }
 
 sat::SatCode sat::get_manufacturer() {
-    return send_receive("AT+CGMI", RESPONSE_BUFFER, MAX_RESPONSE_LENGTH);
+    return send_receive("AT+CGMI", MT_BUF, MAX_RESPONSE_LENGTH);
 }
 
 sat::SatCode sat::get_time(tmElements_t &time) {
-    static char get_time[] = "AT-MSSTM";
-    static char sub[] = "MSSTM: ";
-
     sat::SatCode rc;
-    if ((rc = send_receive(get_time, RESPONSE_BUFFER, MAX_RESPONSE_LENGTH)) != sat::SatCode::Okay) {
+    if ((rc = send_receive("AT-MSSTM", MT_BUF, MAX_RESPONSE_LENGTH)) != sat::SatCode::Okay) {
       return rc;
     }
     // Expect a response in the form of 0xXXXXXXXX which is a 32-bit hex
     // ascii character string representing the number of 90 millisecond
     // intervals that have elapsed since the Iridium epoch.
-    char *start = strstr(RESPONSE_BUFFER, sub) + strlen(sub);
+    static char sub[] = "MSSTM: ";
+    char *start = strstr(MT_BUF, sub) + strlen(sub);
     if (!start) {
-        ECHO("Did not find time. Instead got response:\n%s", RESPONSE_BUFFER);
+        ECHO("Did not find time. Instead got response:\n%s", MT_BUF);
         return sat::SatCode::InvalidResponse;
     }
 
