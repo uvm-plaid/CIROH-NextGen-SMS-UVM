@@ -120,14 +120,12 @@ void loop() {
                 if ((rc = sat::get_time(time)) == sat::SatCode::Okay) {
                     timestamp = makeTime(time);
                     print_time(timestamp);
-                    sat::SbdixResponse response;
-                    sat::initiate_transfer(response);
+                    sat::send_packet("hello", 5);
                     // For now - finish
                     while (1);
                 } else {
                     printing::dbgln("Error getting satellite time.");
                 }
-                packet = LoraPacket::deserialize(I2C_BUFFER, I2C_BUFFER_SIZE, i, status);
             }
         }
         /*printing::dbgln("Status after attempting to serialize packet: %d", (int) status);*/
