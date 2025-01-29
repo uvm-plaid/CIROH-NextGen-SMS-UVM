@@ -1,4 +1,4 @@
-#include <stdint.h>;
+#include <stdint.h>
 #include <time.h>
 
 extern const int MAX_RESPONSE_LENGTH;
