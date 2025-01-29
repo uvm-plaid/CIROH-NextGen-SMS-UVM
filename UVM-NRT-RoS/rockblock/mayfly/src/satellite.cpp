@@ -23,19 +23,24 @@ static tm IRIDIUM_EPOCH = {
    * Send a command, wait for a response, then write it to the destination
    * buffer and print it to the screen.
    *
+   * @param command (const char *): Command string.
+   * @param dst (char []): Destination buffer to receive response into.
+   * @param sz (uint32_t): Size of the destination buffer.
+   *
    * @returns (int): Return code.
    */
     static int sat::send_receive(const char *command, char dst[], uint32_t sz) {
         printing::dbgln("Sending \"%s\"\n", command);
-        int cmd_len = strlen(command);
+        uint32_t cmd_len = strlen(command);
         if (cmd_len > sz) {
             return 1;
         }
 
-        int n_written = Serial1.write(command, cmd_len);
+        uint32_t n_written = Serial1.write(command, cmd_len);
 
         // Write a carriage return to signal end of command and wait for response.
         Serial1.write("\r");
+        ++n_written;
         delay(1000);
 
         printing::dbgln("Wrote %d bytes\n", n_written);

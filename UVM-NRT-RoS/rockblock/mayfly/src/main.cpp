@@ -62,9 +62,10 @@ void setup() {
 	pinMode(8, OUTPUT);
     pinMode(boost_5v_pin, OUTPUT);
     digitalWrite(boost_5v_pin, HIGH);
+
 	Serial.begin(9600);
-	while (!Serial)
-		;
+	Serial1.begin(19200);
+	while (!Serial || !Serial1);
 	delay(500);
 	if (setup_sd()) {
 		return;
@@ -74,8 +75,24 @@ void setup() {
     Wire.begin();
 
 	// Print all filenames
-	print_directory();
+	/*print_directory();*/
 }
+
+/* Function which fills the I2C buffer by requesting as many bytes as it can
+ * fit from the peripheral.
+ * @returns (uint32_t): Number of bytes read.
+ */
+uint32_t fill_i2c_buffer() {
+    // I2C requests from the feather and files all the packets it can
+    Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
+    uint32_t i = 0;
+    while (Wire.available()) {
+        I2C_BUFFER[i++] = Wire.read();
+    }
+    I2C_BUFFER[i] = 0;
+    return i;
+}
+
 
 void loop() {
     // TODO: Have this function write packets to satellite to be sent with backoff
@@ -83,23 +100,20 @@ void loop() {
     LoraPacket packet;
     LoraPacket::SerDeStatus status = LoraPacket::SerDeStatus::Valid;
 	while (true) {
-        // I2C requests from the feather and files all the packets it can
-        Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
-        uint32_t index = 0;
-        while (Wire.available()) {
-            I2C_BUFFER[index++] = Wire.read();
-        }
+        fill_i2c_buffer();
 
-        // Reset index and start parsing packet 
-        index = 0;
-        packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
-        while (status == LoraPacket::SerDeStatus::Valid
-            && packet.serialize(OUT_BUF, sizeof(OUT_BUF), index) == LoraPacket::SerDeStatus::Valid) {
-            printing::dbgln("Getting manufacturer.");
-            sat::get_manufacturer();
-            packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
-            printing::dbgln("Packet ID: %d", packet.source_id);
+        uint32_t i = 0;
+        packet = LoraPacket::deserialize(I2C_BUFFER, I2C_BUFFER_SIZE, i, status);
+        if (status == LoraPacket::SerDeStatus::Valid) {
+            i = 0;
+            while (status == LoraPacket::SerDeStatus::Valid &&
+                (status = packet.serialize(OUT_BUF, sizeof(OUT_BUF), i)) 
+                    == LoraPacket::SerDeStatus::Valid) {
+                sat::get_manufacturer();
+                packet = LoraPacket::deserialize(I2C_BUFFER, I2C_BUFFER_SIZE, i, status);
+            }
         }
+        /*printing::dbgln("Status after attempting to serialize packet: %d", (int) status);*/
         delay(1000);
 	}
 }
