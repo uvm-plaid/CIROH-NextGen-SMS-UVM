@@ -40,10 +40,16 @@ void sat::set_echo(bool echo) { __DEBUG_ECHO = echo; }
  * @param command (const char *): Command string.
  * @param dst (char []): Destination buffer to receive response into.
  * @param sz (uint32_t): Size of the destination buffer.
+ * @param block (bool): Block until all data is available.
  *
  * @returns (SatCode): Return code.
 */
-static sat::SatCode send_receive(const char *command, char dst[], uint32_t sz) {
+static sat::SatCode send_receive(
+    const char *command, 
+    char dst[], 
+    uint32_t sz,
+    bool block = true
+) {
     ECHO("Sending \"%s\"\n", command);
     uint32_t cmd_len = strlen(command);
     if (cmd_len > sz) {
@@ -55,11 +61,17 @@ static sat::SatCode send_receive(const char *command, char dst[], uint32_t sz) {
     // Write a carriage return to signal end of command and wait for response.
     Serial1.write("\r");
     ++n_written;
-    delay(1000);
 
     ECHO("Wrote %d bytes\n", n_written);
 
     size_t index = 0;
+    // Imperfect blocking method which waits half a second after serial becomes
+    // available to make sure all the bytes have been transmitted.
+    if (block) {
+        while (!Serial1.available());
+        delay(500);
+    }
+
     while (Serial1.available()) {
         dst[index++] = Serial1.read();
     }
@@ -73,29 +85,74 @@ static sat::SatCode send_receive(const char *command, char dst[], uint32_t sz) {
     return sat::SatCode::Okay;
 }
 
-sat::SbdixResponse sat::initiate_transfer() {
-    sat::SbdixResponse response;
-    return response;
+sat::SatCode sat::initiate_transfer(sat::SbdixResponse &response) {
+    sat::SatCode rc;
+    // This has to be a blocking call because it takes a while
+    if ((rc = send_receive("AT+SBDIX", MT_BUF, MAX_RESPONSE_LENGTH, true)) 
+        != sat::SatCode::Okay) {
+      return rc;
+    }
+
+    // Parse the response
+    static char sub[] = "+SBDIX:";
+    char *start = strstr(MT_BUF, sub) + sizeof(sub);
+    if (!start) {
+        ECHO("Did not find time. Instead got response:\n%s", MT_BUF);
+        return sat::SatCode::InvalidResponse;
+    }
+    // Keep splitting the response tuple
+    static uint32_t base = 10;
+    static char delim[] = ",";
+    char *ptr = strtok(start, delim);
+    ECHO("MO Status: %s", ptr);
+    auto mo_status = static_cast<sat::SbdixResponse::MoStatus>(strtoul(ptr, nullptr, base));
+    if (mo_status == sat::SbdixResponse::MoStatus::NoNetworkService) {
+        return sat::SatCode::NetworkErr;
+    }
+    if ((ptr = strtok(nullptr, delim)) == nullptr) { return sat::SatCode::InvalidResponse; }
+    ECHO("MT Status: %s", ptr);
+    auto mt_status = static_cast<sat::SbdixResponse::MtStatus>(strtoul(ptr, nullptr, base));
+    if ((ptr = strtok(nullptr, delim)) == nullptr) { return sat::SatCode::InvalidResponse; }
+    ECHO("MOMSN: %s", ptr);
+    uint16_t momsn = strtoul(ptr, nullptr, base);
+    if ((ptr = strtok(nullptr, delim)) == nullptr) { return sat::SatCode::InvalidResponse; }
+    ECHO("MT Length: %s", ptr);
+    uint32_t mt_length = strtoul(ptr, nullptr, base);
+    if ((ptr = strtok(nullptr, delim)) == nullptr) { return sat::SatCode::InvalidResponse; }
+    ECHO("MT Queued: %s", ptr);
+    uint32_t mt_queued = strtoul(ptr, nullptr, base);
+    if ((ptr = strtok(nullptr, delim)) != nullptr) { return sat::SatCode::InvalidResponse; }
+    ECHO("Extra: %s", ptr);
+   
+    // Set the fields
+    response.mo_status = mo_status;
+    response.mt_status = mt_status;
+    response.momsn = momsn;
+    response.mt_length = mt_length;
+    response.mt_queued = mt_queued;
+
+    return sat::SatCode::Okay;
 }
 
 sat::SatCode sat::send_packet(LoraPacket packet) {
+    // TODO
     return sat::SatCode::Okay;
 }
 
 sat::SatCode sat::get_manufacturer() {
-    return send_receive("AT+CGMI", MT_BUF, MAX_RESPONSE_LENGTH);
+    return send_receive("AT+CGMI", MT_BUF, MAX_RESPONSE_LENGTH, true);
 }
 
 sat::SatCode sat::get_time(tmElements_t &time) {
     sat::SatCode rc;
-    if ((rc = send_receive("AT-MSSTM", MT_BUF, MAX_RESPONSE_LENGTH)) != sat::SatCode::Okay) {
+    if ((rc = send_receive("AT-MSSTM", MT_BUF, MAX_RESPONSE_LENGTH, true)) != sat::SatCode::Okay) {
       return rc;
     }
     // Expect a response in the form of 0xXXXXXXXX which is a 32-bit hex
     // ascii character string representing the number of 90 millisecond
     // intervals that have elapsed since the Iridium epoch.
     static char sub[] = "MSSTM: ";
-    char *start = strstr(MT_BUF, sub) + strlen(sub);
+    char *start = strstr(MT_BUF, sub) + sizeof(sub);
     if (!start) {
         ECHO("Did not find time. Instead got response:\n%s", MT_BUF);
         return sat::SatCode::InvalidResponse;

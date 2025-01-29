@@ -13,6 +13,7 @@ namespace sat {
         CmdTooLong,
         RecvErr,
         InvalidResponse,
+        NetworkErr,
     };
 
     // SBDIX: Short Burst Data Extended
@@ -67,7 +68,7 @@ namespace sat {
     };
 
     void set_echo(bool echo); 
-    sat::SbdixResponse initiate_transfer();
+    sat::SatCode initiate_transfer(sat::SbdixResponse &response);
     sat::SatCode send_packet(LoraPacket packet);
     sat::SatCode get_time(tmElements_t &time);
     sat::SatCode get_manufacturer();
