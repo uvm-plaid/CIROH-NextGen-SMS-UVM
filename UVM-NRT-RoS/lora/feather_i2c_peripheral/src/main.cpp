@@ -103,7 +103,7 @@ void i2c_request_handler() {
         return;
     }
     uint32_t nbytes = 0;
-    LoraPacket::SerdeStatus ret = packet.serialize(buf, sizeof(buf), nbytes);
+    LoraPacket::SerDeStatus ret = packet.serialize(buf, sizeof(buf), nbytes);
     Serial.println(static_cast<uint8_t>(status));
     if (ret == LoraPacket::SerdeStatus::Valid) {
         Wire.write(buf, nbytes);
@@ -131,8 +131,6 @@ void loop() {
     LoraPacket packet;
     for (int i = 0; i <= 10; ++i) {
         packet.source_id = i; 
-        Serial.print("Packet ID: ");
-        Serial.println(i);
         LoraPeripheralStatus status = peripheral->receive(packet);
         if (status == LoraPeripheralStatus::RECEIVE_SUCCESSFUL) {
             Serial.println("Successfully received packet");

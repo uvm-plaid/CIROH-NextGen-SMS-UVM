@@ -16,8 +16,9 @@
  */
 
 /*#include "MFCC_RF.h"*/
-#include "printing.h"
 #include "loraDevice.h"
+#include "printing.h"
+#include "satellite.h"
 
 #include <Arduino.h>
 #include <IridiumSBD.h>
@@ -27,6 +28,8 @@
 
 // Default chip select pin for Mayfly SD card
 constexpr int chip_select = 12;
+// Digital pin to enable 5V boost voltage for UART output
+constexpr int boost_5v_pin = 22;
 SdFat sd;
 SdFile file;
 constexpr uint8_t PERIPHERAL_ADDRESS = 8;  // Hardcoded address for I2C peripheral
@@ -57,6 +60,8 @@ void setup() {
 	// initialize digital pin 8 as an output.
 	// green LED on Mayfly logger
 	pinMode(8, OUTPUT);
+    pinMode(boost_5v_pin, OUTPUT);
+    digitalWrite(boost_5v_pin, HIGH);
 	Serial.begin(9600);
 	while (!Serial)
 		;
@@ -73,8 +78,10 @@ void setup() {
 }
 
 void loop() {
+    // TODO: Have this function write packets to satellite to be sent with backoff
+    static uint8_t OUT_BUF[sizeof(LoraPacket)];
     LoraPacket packet;
-    LoraPacket::SerdeStatus status = LoraPacket::SerdeStatus::Valid;
+    LoraPacket::SerDeStatus status = LoraPacket::SerDeStatus::Valid;
 	while (true) {
         // I2C requests from the feather and files all the packets it can
         Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
@@ -86,7 +93,10 @@ void loop() {
         // Reset index and start parsing packet 
         index = 0;
         packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
-        while (status == LoraPacket::SerdeStatus::Valid) {
+        while (status == LoraPacket::SerDeStatus::Valid
+            && packet.serialize(OUT_BUF, sizeof(OUT_BUF), index) == LoraPacket::SerDeStatus::Valid) {
+            printing::dbgln("Getting manufacturer.");
+            sat::get_manufacturer();
             packet = LoraPacket::deserialize(I2C_BUFFER, sizeof(I2C_BUFFER), index, status);
             printing::dbgln("Packet ID: %d", packet.source_id);
         }

@@ -1,6 +1,6 @@
 #include <loraDevice.h>
 
-LoraPacket LoraPacket::deserialize(const uint8_t buf[], uint32_t buf_size, uint32_t &index, LoraPacket::SerdeStatus &status) {
+LoraPacket LoraPacket::deserialize(const uint8_t buf[], uint32_t buf_size, uint32_t &index, LoraPacket::SerDeStatus &status) {
     auto get_u8 = [&buf, &index]() -> uint8_t { return buf[index++]; };
     auto get_u16 = [get_u8, &buf, &index]() -> uint16_t {
         // Assume little endian byte ordering
@@ -11,10 +11,10 @@ LoraPacket LoraPacket::deserialize(const uint8_t buf[], uint32_t buf_size, uint3
     };
     LoraPacket packet;
     if ((buf_size - index) < sizeof(LoraPacket)) {
-        status = LoraPacket::SerdeStatus::InsufficientBufferSize;
+        status = LoraPacket::SerDeStatus::InsufficientBufferSize;
         return packet; 
     } else if (get_u8() != LoraPacket::MAGIC) {
-        status = LoraPacket::SerdeStatus::InvalidMagicNumber;
+        status = LoraPacket::SerDeStatus::InvalidMagicNumber;
         return packet; 
     }
     packet.source_id = get_u8();
@@ -26,12 +26,12 @@ LoraPacket LoraPacket::deserialize(const uint8_t buf[], uint32_t buf_size, uint3
     packet.phase_prediction = get_u8();
     packet.intensity_prediction = get_u8();
     packet.flags = static_cast<LoraPacketFlags>(get_u8());
-    status = LoraPacket::SerdeStatus::Valid;
+    status = LoraPacket::SerDeStatus::Valid;
     return packet;
 }
 
 
-LoraPacket::SerdeStatus LoraPacket::serialize(uint8_t buf[], uint32_t buf_size, uint32_t &index) {
+LoraPacket::SerDeStatus LoraPacket::serialize(uint8_t buf[], uint32_t buf_size, uint32_t &index) {
     auto write_u8 = [&buf, &index](uint8_t value) {
         buf[index++] = value;
     };
@@ -41,9 +41,9 @@ LoraPacket::SerdeStatus LoraPacket::serialize(uint8_t buf[], uint32_t buf_size, 
         write_u8(static_cast<uint8_t>((value >> 8) & 0xFF));
     };
     if ((buf_size - index) < sizeof(LoraPacket)) {
-        return LoraPacket::SerdeStatus::InsufficientBufferSize;
+        return LoraPacket::SerDeStatus::InsufficientBufferSize;
     } else if (this->magic != LoraPacket::MAGIC) {
-        return LoraPacket::SerdeStatus::InvalidMagicNumber;
+        return LoraPacket::SerDeStatus::InvalidMagicNumber;
     }
     write_u8(this->magic);
     write_u8(this->source_id);
@@ -56,5 +56,5 @@ LoraPacket::SerdeStatus LoraPacket::serialize(uint8_t buf[], uint32_t buf_size, 
     write_u8(this->intensity_prediction);
     write_u8(static_cast<uint8_t>(this->flags));
     
-    return LoraPacket::SerdeStatus::Valid;
+    return LoraPacket::SerDeStatus::Valid;
 }
