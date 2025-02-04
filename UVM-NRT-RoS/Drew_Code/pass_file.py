@@ -121,7 +121,8 @@ def is_precipitating():
             "flurries": "snow",
             "wintry mix": "snow",
             "sleet": "snow",
-            "freezing rain": "snow"
+            "freezing rain": "snow",
+            "cloudy": "snow"
         }
 
         for pattern, label in precipitation_mapping.items():
