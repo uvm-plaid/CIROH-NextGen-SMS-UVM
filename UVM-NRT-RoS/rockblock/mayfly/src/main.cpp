@@ -12,12 +12,10 @@
 #include "RandomForestClassifier.h"
 #include "satellite.h"
 
-// Default chip select pin for Mayfly SD card
-constexpr int chip_select = 12;
-// Digital pin to enable 5V boost voltage for UART output
-constexpr int boost_5v_pin = 22;
 SdFat sd;
 SdFile file;
+constexpr int MAYFLY_SD_PIN = 12;
+constexpr int MAYFLY_BOOST_5V_PIN = 22;
 constexpr uint8_t PERIPHERAL_ADDRESS = 8;  // Hardcoded address for I2C peripheral
 constexpr uint8_t I2C_BUFFER_SIZE = 32;
 static uint8_t I2C_BUFFER[I2C_BUFFER_SIZE + 1];
@@ -41,8 +39,8 @@ void setup() {
 	// initialize digital pin 8 as an output.
 	// green LED on Mayfly logger
 	pinMode(8, OUTPUT);
-    pinMode(boost_5v_pin, OUTPUT);
-    digitalWrite(boost_5v_pin, HIGH);
+    pinMode(MAYFLY_BOOST_5V_PIN, OUTPUT);
+    digitalWrite(MAYFLY_BOOST_5V_PIN, HIGH);
 
 	Serial.begin(9600);
 	Serial1.begin(19200);
