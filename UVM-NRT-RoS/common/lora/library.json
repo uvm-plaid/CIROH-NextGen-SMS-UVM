@@ -1,0 +1,20 @@
+{
+  "name": "LoraCommon",
+  "version": "1.0.0",
+  "description": "Common code library for using lora modules.",
+  "dependencies":
+  [
+	"sandeepmistry/LoRa@^0.8.0"
+  ],
+  "authors":
+  [
+    {
+      "name": "Scott Barrett"
+    },
+    {
+      "name": "Jordan Bourdeau",
+      "email": "jbourde2@uvm.edu",
+      "maintainer": true
+    }
+  ]
+}
