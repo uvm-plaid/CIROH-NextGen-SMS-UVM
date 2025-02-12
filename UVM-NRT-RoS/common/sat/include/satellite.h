@@ -1,5 +1,3 @@
-#include "loraDevice.h"
-
 #include <stdint.h>
 #include <TimeLib.h>
 

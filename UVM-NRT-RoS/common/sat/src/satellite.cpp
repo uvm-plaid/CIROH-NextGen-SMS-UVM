@@ -1,4 +1,3 @@
-#include "loraDevice.h"
 #include "printing.h"
 #include "satellite.h"
 
