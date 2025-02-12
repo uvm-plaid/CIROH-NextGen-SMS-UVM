@@ -216,17 +216,22 @@ sat::SatCode sat::get_time(tmElements_t &time) {
     // ascii character string representing the number of 90 millisecond
     // intervals that have elapsed since the Iridium epoch.
     static char sub[] = "MSSTM: ";
-    char *start = strstr(MT_BUF, sub) + sizeof(sub);
+    char *start = strstr(MT_BUF, sub) + sizeof(sub) - 1;
     if (!start) {
         ECHO("Did not find time. Instead got response:\n%s", MT_BUF);
         return sat::SatCode::InvalidResponse;
     }
 
     uint64_t intervals = strtoul(start, nullptr, 16);
+    if (intervals == 0) {
+        ECHO("Could not parse response. No network service.", MT_BUF);
+        return sat::SatCode::NetworkErr;
+    }
 
     // Calculate total seconds elapsed since the Iridium epoch
     uint64_t total_ms = intervals * 90; // 90 milliseconds per interval
     uint64_t total_seconds = total_ms / 1000;
+    ECHO("Seconds: %ul", total_seconds);
 
     // Calculate current time
     time_t epoch_time = makeTime(IRIDIUM_EPOCH);
