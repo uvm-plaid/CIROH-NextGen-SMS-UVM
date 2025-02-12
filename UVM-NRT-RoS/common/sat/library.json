@@ -1,0 +1,17 @@
+{
+  "name": "Sat",
+  "version": "1.0.0",
+  "description": "Library containing code for interacting with the Rockblock.",
+  "dependencies": 
+  [
+    "symlink://../printing" 
+  ],
+  "authors":
+  [
+    {
+      "name": "Jordan Bourdeau",
+      "email": "jbourde2@uvm.edu",
+      "maintainer": true
+    }
+  ]
+}

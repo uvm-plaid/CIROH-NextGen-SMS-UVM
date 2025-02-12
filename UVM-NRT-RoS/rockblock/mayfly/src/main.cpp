@@ -6,8 +6,7 @@
 #include <TimeLib.h>
 #include <Wire.h>
 
-/*#include "MFCC_RF.h"*/
-#include "loraDevice.h"
+#include "LoraDevice.h"
 #include "printing.h"
 #include "RandomForestClassifier.h"
 #include "satellite.h"
