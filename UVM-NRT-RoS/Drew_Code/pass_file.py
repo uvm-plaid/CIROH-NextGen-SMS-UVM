@@ -9,7 +9,7 @@ import time
 SERIAL_PORT = "/dev/ttyUSB0"  
 BAUD_RATE = 9600
 OUTPUT_DIR = "output"
-url = "https://cdjepsen.w3.uvm.edu/research/upload.php"
+url = "https://cdjepsen.w3.uvm.edu/ciroh/data_cat/samples/upload.php"
 
 
 import os
@@ -180,7 +180,7 @@ def main():
                 audio_data = read_audio_file(ser)
                 is_precip, precip_type = is_precipitating()
                 
-                if audio_data and is_precip:  # Only save and send if precipitation is detected
+                if audio_data:# and is_precip:  # Only save and send if precipitation is detected
                     fname = save_audio_file(audio_data, precip_type)
                     send_wav_file(fname, url)
                 else:
