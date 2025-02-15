@@ -1,5 +1,11 @@
-#if 0
 #include <Arduino.h>
+
+#if defined(USING_SX1276) || defined(USING_SX1278)
+#include <U8g2lib.h>
+#include "LoRaBoards.h"
+#else
+#include "rf95.h"
+#endif
 
 // put function declarations here:
 int myFunction(int, int);
@@ -22,4 +28,3 @@ void loop() {
 int myFunction(int x, int y) {
   return x + y;
 }
-#endif

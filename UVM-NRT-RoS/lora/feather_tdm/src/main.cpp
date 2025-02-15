@@ -1,12 +1,12 @@
-#include "loraDevice.h"
+#include "LoraDevice.h"
 #include "tdm.h"
 #include <Arduino.h>
 
 #if defined(USING_SX1276) || defined(USING_SX1278)
 #include <U8g2lib.h>
-#include "platform/lilygo/LoRaBoards.h"
+#include "LoRaBoards.h"
 #else
-#include "platform/feather/rf95.h"
+#include "rf95.h"
 #endif
 
 void beginDisplayStr();

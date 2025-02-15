@@ -1,34 +1,25 @@
-/*
-	Blink
-	Turns on an LED on for one second, then off for one second, repeatedly.
-
-	Most Arduinos have an on-board LED you can control. On the Uno and
-	Leonardo, it is attached to digital pin 13. On the Mayfly there are LEDs
-	at pins 8 and 9. If you're unsure what pin the on-board LED is connected
-	to on your Arduino model, check the documentation at http://www.arduino.cc
-
-	This example code is in the public domain.
-
-	modified 8 May 2014
-	by Scott Fitzgerald
-	modified 9 February 2018 for Mayfly
-	by Beth Fisher
- */
-
-/*#include "MFCC_RF.h"*/
-#include "printing.h"
-
 #include <Arduino.h>
 #include <IridiumSBD.h>
 #include <SdFat.h>
+#include "Sodaq_DS3231.h"
 #include <SPI.h>
+#include <TimeLib.h>
 #include <Wire.h>
 
-// Default chip select pin for Mayfly SD card
-const int chip_select = 12;
+#include "LoraDevice.h"
+#include "printing.h"
+#include "RandomForestClassifier.h"
+#include "satellite.h"
+
 SdFat sd;
 SdFile file;
+constexpr int MAYFLY_SD_PIN = 12;
+constexpr int MAYFLY_BOOST_5V_PIN = 22;
+constexpr uint8_t PERIPHERAL_ADDRESS = 8;  // Hardcoded address for I2C peripheral
+constexpr uint8_t I2C_BUFFER_SIZE = 32;
+static uint8_t I2C_BUFFER[I2C_BUFFER_SIZE + 1];
 
+// Commented out to decrease compile times for now
 /*Eloquent::ML::Port::RandomForest rf_clf;*/
 /*const char *csv_name = "/mfccs_only.csv";*/
 /*const uint32_t num_mfccs = 13;*/
@@ -37,77 +28,72 @@ SdFile file;
 /*static char line_buffer[256];*/
 
 void print_directory();
-
-uint32_t setup_sd() {
-	if (!sd.begin(SS, SPI_MODE0)) {
-		Serial.println("SD card initialization failed!");
-		return 1;
-	}
-	Serial.println("SD card initialized.");
-	return 0;
-}
-
-/**
- * Start the I2C connection as a client which makes requests to the server
- * (Periodically request data from LoRa module handling comms).
- */
-uint32_t start_i2c() {
-
-}
+void print_time(time_t t);
+int setup_sd();
+int setup_rtc();
+uint32_t fill_i2c_buffer();
 
 // the setup function runs once when you press reset or power the board
 void setup() {
 	// initialize digital pin 8 as an output.
 	// green LED on Mayfly logger
 	pinMode(8, OUTPUT);
+    pinMode(MAYFLY_BOOST_5V_PIN, OUTPUT);
+    digitalWrite(MAYFLY_BOOST_5V_PIN, HIGH);
+
 	Serial.begin(9600);
-	while (!Serial)
-		;
+	Serial1.begin(19200);
+	while (!Serial || !Serial1);
 	delay(500);
-	if (setup_sd() || start_i2c()) {
+	if (setup_sd() != 0) {
+        printing::dbgln("Error setting up SD card.");
+		return;
+    }
+    if (setup_rtc() != 0) {
+        printing::dbgln("Error setting up RTC.");
 		return;
     }
 
-
-
-	// Print all filenames
-	print_directory();
+    // Start I2C
+    Wire.begin();
 }
 
 void loop() {
-	/*file.open(csv_name, FILE_READ);*/
-	/*// Parse CSV file and compute accuracy metrics on whole dataset*/
-	/*int n = file.fgets(line_buffer, sizeof(line_buffer));*/
-	/*int num_rows = 0;*/
-	/*int correct_predictions = 0;*/
-	/*while (file.available()) {*/
-	/*	int n = file.fgets(line_buffer, sizeof(line_buffer));*/
-	/*	// Parse columns*/
-	/*	char *pch = strtok(line_buffer, ",");*/
-	/*	int column = 0;*/
-	/*	while (pch != nullptr) {*/
-	/*		if (column < num_mfccs) {*/
-	/*			X[column] = atof(pch);*/
-	/*		} else {*/
-	/*			label = atoi(pch);*/
-	/*		}*/
-	/*		pch = strtok(nullptr, ",");*/
-	/*		++column;*/
-	/*	}*/
-	/**/
-	/*	// Make prediction*/
-	/*	int prediction = rf_clf.predict(X);*/
-	/*	if (prediction == label) {*/
-	/*		++correct_predictions;*/
-	/*	}*/
-	/**/
-	/*	++num_rows;*/
-	/*}*/
-	/*printing::dbgln("Got %d / %d predictions correct", correct_predictions,*/
-	/*								num_rows);*/
-
+    // TODO: Have this function write packets to satellite to be sent with backoff
+    static uint8_t OUT_BUF[sizeof(LoraPacket)];
+    LoraPacket packet;
+    LoraPacket::SerDeStatus status = LoraPacket::SerDeStatus::Valid;
 	while (true) {
+        fill_i2c_buffer();
+        uint32_t i = 0;
+        packet = LoraPacket::deserialize(I2C_BUFFER, I2C_BUFFER_SIZE, i, status);
+        if (status == LoraPacket::SerDeStatus::Valid) {
+            i = 0;
+            while (status == LoraPacket::SerDeStatus::Valid &&
+                (status = packet.serialize(OUT_BUF, sizeof(OUT_BUF), i)) 
+                    == LoraPacket::SerDeStatus::Valid) {
+                sat::send_packet("hello", 5);
+                while (1);
+            }
+        }
+        delay(1000);
 	}
+}
+
+
+/* Function which fills the I2C buffer by requesting as many bytes as it can
+ * fit from the peripheral.
+ * @returns (uint32_t): Number of bytes read.
+ */
+uint32_t fill_i2c_buffer() {
+    // I2C requests from the feather and files all the packets it can
+    Wire.requestFrom(PERIPHERAL_ADDRESS, I2C_BUFFER_SIZE);
+    uint32_t i = 0;
+    while (Wire.available()) {
+        I2C_BUFFER[i++] = Wire.read();
+    }
+    I2C_BUFFER[i] = 0;
+    return i;
 }
 
 void print_directory() {
@@ -139,4 +125,45 @@ void print_directory() {
 	}
 
 	dir.close();
+}
+
+int setup_sd() {
+	if (!sd.begin(SS, SPI_MODE0)) {
+		Serial.println("SD card initialization failed!");
+		return -1;
+	}
+	Serial.println("SD card initialized.");
+	return 0;
+}
+
+int setup_rtc() {
+    DateTime dt;
+    time_t tt;
+    tmElements_t time_elements;
+
+    dt = rtc.now();
+    tt = dt.getEpoch();
+    printing::dbgln("RTC Time (Before):");
+    print_time(tt);
+
+    while (sat::get_time(time_elements) != sat::SatCode::Okay) {
+        printing::dbgln("Retrying to get satellite time.");
+    }
+
+    rtc.begin();
+    // Adjust for difference in epoch (1970-01-01 -> 2000-01-01)
+    tt = makeTime(time_elements) - 30 * SECS_PER_YEAR;
+    dt = DateTime(tt);
+    rtc.setDateTime(dt);
+    dt = rtc.now();
+    tt = dt.getEpoch();
+    printing::dbgln("RTC Time (After):");
+    print_time(tt);
+
+    return 0;
+}
+
+void print_time(time_t t) {
+    printing::dbgln("Timestamp:");
+    printing::dbgln("%d-%d-%d %d:%d:%d", year(t), month(t), day(t), hour(t), minute(t), second(t));
 }

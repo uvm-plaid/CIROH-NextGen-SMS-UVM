@@ -1,0 +1,20 @@
+{
+  "name": "FeatherCommon",
+  "version": "1.0.0",
+  "description": "Common code library for using the Feather LoRa module.",
+  "dependencies": [
+    "epsilonrt/RadioHead@^1.122.1",
+	"sandeepmistry/LoRa@^0.8.0"
+  ],
+  "authors":
+  [
+    {
+      "name": "Scott Barrett"
+    },
+    {
+      "name": "Jordan Bourdeau",
+      "email": "jbourde2@uvm.edu",
+      "maintainer": true
+    }
+  ]
+}
